@@ -30,7 +30,7 @@ const companySchema = new mongoose.Schema(
         },
 
         zipCode: {
-            type: int,
+            type: Number,
             required: [true, 'Zip code required']
         }
     },
