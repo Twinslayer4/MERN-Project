@@ -2,7 +2,7 @@ const User = require('./User');
 const Company = require('./company');
 const Application = require('./applicationStatus')
 
-moudle.exports = {
+module.exports = {
     User,
     Company,
     Application
