@@ -1,0 +1,56 @@
+/* Selected Botanical design: neutral charcoal surfaces with sage accents. */
+body[data-concept="1"].alternate{
+  color-scheme:dark;
+  --bg:#17181b;
+  --panel:#202125;
+  --ink:#ececef;
+  --muted:#a0a2aa;
+  --accent:#b3ca9e;
+  --on-accent:#20271b;
+  --line:#34363d;
+  --subtle:#292b30;
+}
+.alternate .workspace-sidebar,.alternate .workspace-top{background:#1c1d21}
+.alternate .workspace-main,.alternate .signin-card{--panel:#202125}
+.alternate .workspace-sidebar a[aria-current=page]{background:#b3ca9e14;color:var(--accent)}
+.alternate .workspace-stats>div:first-child,.alternate .encouragement{background:#25272c}
+.alternate .workspace-profile>span,.alternate .profile-dot{background:#2b2e2a;color:var(--accent)}
+.alternate .workspace-top .profile-dot{color:var(--accent)!important}
+.alternate .application-initial{background:#2b2d31;color:var(--accent)}
+.alternate .workspace-top b{color:#70737d}
+.alternate .progress-track{background:#303238}
+.alternate .progress-track i{background:#a6bf8e}
+.alternate .signin-art,.alternate .sidebar-thought>span{color:#a4ba90}
+.alternate .signin-story h1 em,.alternate .botanical-hero h1 em{color:#b0c39d}
+.alternate .workspace-status{background:#29332a;border-color:#42503e;color:#bdd3ae}
+.alternate .workspace-status.status-applied{background:#292f3c;border-color:#3c475e;color:#b4c5e6}
+.alternate .workspace-status.status-interviewing{background:#363127;border-color:#514735;color:#daca9f}
+.alternate .workspace-status.status-rejected{background:#38292c;border-color:#563c42;color:#e0b1b6}
+.alternate :is(.recent-item,.progress-list) .status{background:#29332a;color:#bdd3ae}
+.alternate :is(.recent-item,.progress-list) .applied{background:#292f3c;color:#b4c5e6}
+.alternate :is(.recent-item,.progress-list) .interviewing{background:#363127;color:#daca9f}
+.alternate :is(.recent-item,.progress-list) .rejected{background:#38292c;color:#e0b1b6}
+.alternate .delete-application{color:#e0a5a5}
+.alternate .status-strip{background:#222327;border-color:var(--line)}
+.alternate .status-strip b{color:var(--accent)}
+.alternate .orbit{border-color:#303238}
+.alternate .visual-note{color:#a5a9a2}
+.alternate .plant-mark{color:#87967a}
+.alternate .botanical-visual .dashboard{--panel:#202125;color:var(--ink);border-color:var(--line);box-shadow:0 24px 60px -27px #0008}
+.alternate .browser-top{background:#25262b;border-color:var(--line);color:var(--muted)}
+.alternate .window-dots i{background:#53555f}
+.alternate .dash-sidebar,.alternate .table-head,.alternate .table-row{border-color:var(--line)}
+.alternate .dash-sidebar .selected{background:#b3ca9e14;color:var(--accent)}
+.alternate .dash-sidebar>span{color:#92969e}
+.alternate .sidebar-avatar{background:#303238;color:var(--ink)}
+.alternate .dash-greeting p,.alternate .stats>div>span,.alternate .table-title button,.alternate .table-head,.alternate .job-name>span,.alternate .row-date,.alternate .row-more,.alternate .dash-bottom{color:var(--muted)}
+.alternate .stats>div{background:#25262b;border-color:var(--line)}
+.alternate .stats small{color:var(--accent)}
+.alternate .floating-note{background:#25262b;border-color:var(--line);color:var(--ink);box-shadow:0 10px 30px #0003}
+.alternate .floating-note div>span{color:var(--muted)}
+.alternate .note-icon{background:#b3ca9e14;color:var(--accent)}
+.alternate .floating-note>span:last-child{color:var(--accent)}
+.alternate .dashboard .status{background:#29332a;color:#bdd3ae}
+.alternate .dashboard .applied{background:#292f3c;color:#b4c5e6}
+.alternate .dashboard .interviewing{background:#363127;color:#daca9f}
+.alternate .dashboard .company-logo{filter:brightness(.85)}

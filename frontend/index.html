@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f5ee">
+  <meta name="description" content="Keep every application, interview, and possibility in one calm place with Nextstep, a simple job application tracker.">
+  <title>Nextstep — Your next chapter starts here</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="workspace.css">
+  <link rel="stylesheet" href="dark.css">
+  <script src="app.js" defer></script>
+  <script src="workspace.js" defer></script>
+</head>
+<body>
+  <div id="site"></div>
+  <dialog id="demo-dialog" aria-labelledby="demo-title">
+    <div class="dialog-top"><div><p class="eyebrow">NEXTSTEP / INTERACTIVE DEMO</p><h2 id="demo-title">Your applications</h2></div><button class="icon-button close-dialog" aria-label="Close demo">×</button></div>
+    <p class="demo-note">Try adding an application or changing a status. This demo saves only in this browser; accounts aren’t connected yet.</p>
+    <div class="demo-toolbar"><label class="sr-only" for="filter">Filter by status</label><select id="filter"><option value="all">All applications</option><option>Applied</option><option>Interviewing</option><option>Offer</option><option>Rejected</option></select><button class="button primary" id="add-app">+ Add application</button></div>
+    <form id="application-form" hidden><input type="hidden" name="id"><label>Company<input name="company" placeholder="e.g. Acme" required maxlength="60"></label><label>Role<input name="role" placeholder="e.g. Frontend developer" required maxlength="80"></label><div class="form-actions"><button type="button" class="button secondary" id="cancel-app">Cancel</button><button class="button primary" type="submit">Save application</button></div></form>
+    <div id="demo-list" aria-live="polite"></div><p class="demo-bottom">Sample applications are illustrative. No real applications are submitted.</p>
+  </dialog>
+  <dialog id="login-dialog" aria-labelledby="login-title"><div class="dialog-top"><span class="brand">nextstep<span>↗</span></span><button class="icon-button close-dialog" aria-label="Close account preview">×</button></div><p class="eyebrow">ACCOUNT PREVIEW</p><h2 id="login-title">A place for your next move.</h2><p>Account creation and login will connect to the team’s backend. For now, take the tracker for a spin with sample applications.</p><button class="button primary" data-demo>Explore the demo <span>↗</span></button></dialog>
+  <div class="toast" role="status"></div>
+</body>
+</html>
