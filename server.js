@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 require('dotenv').config();
 
 const apiRouter = require('./routes');
@@ -23,6 +24,21 @@ app.use(express.json());
 
 // Every API route lives under /api and is defined in ./routes
 app.use('/api', apiRouter);
+
+// Serve the production React frontend
+const clientDistPath = path.join(__dirname, 'client', 'dist');
+
+app.use(express.static(clientDistPath));
+
+// Send React's index.html for frontend routes such as /login and /dashboard
+app.get('/{*splat}', (req, res, next) => {
+  // Let unknown API requests continue to the API 404 handler
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+
+  res.sendFile(path.join(clientDistPath, 'index.html'));
+});
 
 // Must come after all routes: unknown routes, then the central error handler
 app.use(notFound);
