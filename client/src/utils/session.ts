@@ -1,11 +1,16 @@
 export interface Session {
   token: string
-  id: string
-  firstName: string
-  lastName: string
+  user: {
+    _id: string
+    firstName: string
+    lastName: string
+    login: string
+    email: string
+    role: string
+  }
 }
 
-const STORAGE_KEY = "user_data"
+const STORAGE_KEY = 'user_data'
 
 export function getSession(): Session | null {
   try {
@@ -17,7 +22,7 @@ export function getSession(): Session | null {
 
     const session = JSON.parse(stored) as Session
 
-    return session.token && session.id ? session : null
+    return session.token && session.user?._id ? session : null
   } catch {
     return null
   }
