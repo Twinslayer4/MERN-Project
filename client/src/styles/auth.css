@@ -263,3 +263,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+.auth-error-button {
+  text-decoration: none;
+}
+
+.auth-error-button:hover {
+  color: white;
+}
