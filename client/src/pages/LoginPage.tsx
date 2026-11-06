@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../utils/api'
 import { saveSession, type Session } from '../utils/session'
+import '../styles/auth.css'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -50,72 +51,107 @@ function LoginPage() {
   }
 
   return (
-    <main className="container py-5">
-      <div className="mx-auto" style={{ maxWidth: '420px' }}>
-        <h1 className="mb-4">Log in</h1>
+    <main className="auth-page">
+      <div className="auth-card">
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label
-              htmlFor="login"
-              className="form-label"
-            >
-              Username
-            </label>
+        <header className="auth-header">
+          <Link to="/" className="auth-brand">
+            <span className="auth-logo">n↗</span>
+            <span className="auth-brand-name">nextstep</span>
+          </Link>
 
-            <input
-              id="login"
-              type="text"
-              className="form-control"
-              value={login}
-              onChange={(event) =>
-                setLogin(event.target.value)
-              }
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label
-              htmlFor="password"
-              className="form-label"
-            >
-              Password
-            </label>
-
-            <input
-              id="password"
-              type="password"
-              className="form-control"
-              value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="alert alert-danger">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-            disabled={loading}
-          >
-            {loading ? 'Logging in...' : 'Log in'}
-          </button>
-
-          <p className="text-center mt-3">
-            Don't have an account?{' '}
-            <Link to="/register">
-              Create one
-            </Link>
+          <p className="auth-tagline">
+            A little clarity for your career
           </p>
-        </form>
+        </header>
+
+        <section className="auth-content">
+          <div className="auth-form-container">
+
+            <p className="auth-eyebrow">
+              Welcome back
+            </p>
+
+            <h1 className="auth-title">
+              Pick up where you left off.
+            </h1>
+
+            <p className="auth-description">
+              Sign in to see your applications and keep moving forward.
+            </p>
+
+            <form
+              className="auth-form"
+              onSubmit={handleSubmit}
+            >
+              <div className="auth-field">
+                <label htmlFor="login">
+                  Username
+                </label>
+
+                <input
+                  id="login"
+                  type="text"
+                  value={login}
+                  onChange={(event) =>
+                    setLogin(event.target.value)
+                  }
+                  placeholder="Enter your username"
+                  autoComplete="username"
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="password">
+                  Password
+                </label>
+
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(event) =>
+                    setPassword(event.target.value)
+                  }
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="alert alert-danger">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="auth-submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  'Logging in...'
+                ) : (
+                  <>
+                    Sign in to your workspace
+                    <span>↗</span>
+                  </>
+                )}
+              </button>
+
+              <p className="auth-register-link">
+                Don't have an account?{' '}
+                <Link to="/register">
+                  Create one
+                </Link>
+              </p>
+            </form>
+
+          </div>
+        </section>
+
       </div>
     </main>
   )

@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../utils/api'
 import type { Session } from '../utils/session'
+import '../styles/auth.css'
 
 function RegisterPage() {
   const navigate = useNavigate()
@@ -55,110 +56,166 @@ function RegisterPage() {
   }
 
   return (
-    <main className="container py-5">
-      <div className="mx-auto" style={{ maxWidth: '420px' }}>
-        <h1 className="mb-4">Create account</h1>
+    <main className="auth-page">
+      <div className="auth-card">
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="firstName" className="form-label">
-              First name
-            </label>
+        <header className="auth-header">
+          <Link to="/" className="auth-brand">
+            <span className="auth-logo">n↗</span>
+            <span className="auth-brand-name">nextstep</span>
+          </Link>
 
-            <input
-              id="firstName"
-              type="text"
-              className="form-control"
-              value={firstName}
-              onChange={(event) =>
-                setFirstName(event.target.value)
-              }
-              required
-            />
+          <p className="auth-tagline">
+            A little clarity for your career
+          </p>
+        </header>
+
+        <section className="auth-content">
+          <div className="auth-form-container">
+
+            <p className="auth-eyebrow">
+              Get started
+            </p>
+
+            <h1 className="auth-title">
+              Build your next step.
+            </h1>
+
+            <p className="auth-description">
+              Create your account and keep your job search organized in one place.
+            </p>
+
+            <form
+              className="auth-form"
+              onSubmit={handleSubmit}
+            >
+              <div className="auth-name-row">
+
+                <div className="auth-field">
+                  <label htmlFor="firstName">
+                    First name
+                  </label>
+
+                  <input
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(event) =>
+                      setFirstName(event.target.value)
+                    }
+                    placeholder="First name"
+                    autoComplete="given-name"
+                    required
+                  />
+                </div>
+
+                <div className="auth-field">
+                  <label htmlFor="lastName">
+                    Last name
+                  </label>
+
+                  <input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(event) =>
+                      setLastName(event.target.value)
+                    }
+                    placeholder="Last name"
+                    autoComplete="family-name"
+                    required
+                  />
+                </div>
+
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="login">
+                  Username
+                </label>
+
+                <input
+                  id="login"
+                  type="text"
+                  value={login}
+                  onChange={(event) =>
+                    setLogin(event.target.value)
+                  }
+                  placeholder="Choose a username"
+                  autoComplete="username"
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="email">
+                  Email
+                </label>
+
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(event) =>
+                    setEmail(event.target.value)
+                  }
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="password">
+                  Password
+                </label>
+
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(event) =>
+                    setPassword(event.target.value)
+                  }
+                  placeholder="Create a password"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="alert alert-danger">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="auth-submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  'Creating account...'
+                ) : (
+                  <>
+                    Create your account
+                    <span>↗</span>
+                  </>
+                )}
+              </button>
+
+              <p className="auth-register-link">
+                Already have an account?{' '}
+                <Link to="/login">
+                  Sign in
+                </Link>
+              </p>
+
+            </form>
+
           </div>
+        </section>
 
-          <div className="mb-3">
-            <label htmlFor="lastName" className="form-label">
-              Last name
-            </label>
-
-            <input
-              id="lastName"
-              type="text"
-              className="form-control"
-              value={lastName}
-              onChange={(event) =>
-                setLastName(event.target.value)
-              }
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label htmlFor="login" className="form-label">
-              Username
-            </label>
-
-            <input
-              id="login"
-              type="text"
-              className="form-control"
-              value={login}
-              onChange={(event) =>
-                setLogin(event.target.value)
-              }
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label">
-              Email
-            </label>
-
-            <input
-              id="email"
-              type="email"
-              className="form-control"
-              value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
-
-            <input
-              id="password"
-              type="password"
-              className="form-control"
-              value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="alert alert-danger">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-            disabled={loading}
-          >
-            {loading ? 'Creating account...' : 'Create account'}
-          </button>
-        </form>
       </div>
     </main>
   )

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearSession, getSession } from '../utils/session'
+import '../styles/dashboard.css'
 
 interface Application {
   id: number
@@ -63,128 +64,286 @@ function DashboardPage() {
       : applications.filter(
           (application) => application.status === filter
         )
+  
+  const totalApplications = applications.length
+
+  const interviewingApplications = applications.filter(
+    (application) => application.status === 'interviewing'
+  ).length
+
+  const offerApplications = applications.filter(
+    (application) => application.status === 'offer'
+  ).length
 
   return (
-    <main className="container py-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1>Dashboard</h1>
-          <p className="mb-0">
-            Welcome, {session?.user.firstName}!
-          </p>
-        </div>
+    <main className="dashboard-page">
+      <div className="dashboard-shell">
 
-        <button
-          type="button"
-          className="btn btn-outline-danger"
-          onClick={handleLogout}
-        >
-          Log out
-        </button>
-      </div>
+        <header className="dashboard-header">
+          <div className="dashboard-brand">
+            <span className="dashboard-logo">n↗</span>
+            <span className="dashboard-brand-name">
+              nextstep
+            </span>
+          </div>
 
-      <section className="mb-5">
-        <h2 className="h4 mb-3">Add application</h2>
+          <div className="dashboard-header-right">
+            <span className="dashboard-user">
+              {session?.user.firstName}
+            </span>
 
-        <form onSubmit={handleAddApplication}>
-          <div className="row g-3">
-            <div className="col-md-4">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Company"
-                value={company}
-                onChange={(event) =>
-                  setCompany(event.target.value)
-                }
-                required
-              />
+            <button
+              type="button"
+              className="dashboard-logout"
+              onClick={handleLogout}
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+
+        <div className="dashboard-content">
+
+          <section className="dashboard-intro">
+            <div>
+              <p className="dashboard-eyebrow">
+                Your workspace
+              </p>
+
+              <h1 className="dashboard-title">
+                Welcome back, {session?.user.firstName}.
+              </h1>
+
+              <p className="dashboard-subtitle">
+                Keep track of every opportunity and see where
+                your job search is heading.
+              </p>
+            </div>
+          </section>
+
+          <section className="dashboard-stats">
+
+            <div className="stat-card">
+              <span className="stat-label">
+                Total applications
+              </span>
+
+              <strong className="stat-number">
+                {totalApplications}
+              </strong>
+
+              <span className="stat-note">
+                Opportunities tracked
+              </span>
             </div>
 
-            <div className="col-md-4">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Job title"
-                value={role}
-                onChange={(event) =>
-                  setRole(event.target.value)
-                }
-                required
-              />
+            <div className="stat-card">
+              <span className="stat-label">
+                Interviewing
+              </span>
+
+              <strong className="stat-number">
+                {interviewingApplications}
+              </strong>
+
+              <span className="stat-note">
+                Active conversations
+              </span>
             </div>
 
-            <div className="col-md-2">
-              <select
-                className="form-select"
-                value={status}
-                onChange={(event) =>
-                  setStatus(event.target.value)
-                }
-              >
-                <option value="applied">Applied</option>
-                <option value="interviewing">
-                  Interviewing
-                </option>
-                <option value="offer">Offer</option>
-                <option value="rejected">Rejected</option>
-              </select>
+            <div className="stat-card">
+              <span className="stat-label">
+                Offers
+              </span>
+
+              <strong className="stat-number">
+                {offerApplications}
+              </strong>
+
+              <span className="stat-note">
+                Offers received
+              </span>
             </div>
 
-            <div className="col-md-2">
+          </section>
+
+          <section className="dashboard-section">
+            <div className="section-heading">
+              <div>
+                <p className="section-eyebrow">
+                  New opportunity
+                </p>
+
+                <h2>Add an application</h2>
+              </div>
+            </div>
+
+            <form
+              className="application-form"
+              onSubmit={handleAddApplication}
+            >
+              <div className="dashboard-field">
+                <label htmlFor="company">
+                  Company
+                </label>
+
+                <input
+                  id="company"
+                  type="text"
+                  placeholder="e.g. Spotify"
+                  value={company}
+                  onChange={(event) =>
+                    setCompany(event.target.value)
+                  }
+                  required
+                />
+              </div>
+
+              <div className="dashboard-field">
+                <label htmlFor="role">
+                  Job title
+                </label>
+
+                <input
+                  id="role"
+                  type="text"
+                  placeholder="e.g. Software Engineer"
+                  value={role}
+                  onChange={(event) =>
+                    setRole(event.target.value)
+                  }
+                  required
+                />
+              </div>
+
+              <div className="dashboard-field">
+                <label htmlFor="status">
+                  Status
+                </label>
+
+                <select
+                  id="status"
+                  value={status}
+                  onChange={(event) =>
+                    setStatus(event.target.value)
+                  }
+                >
+                  <option value="applied">
+                    Applied
+                  </option>
+
+                  <option value="interviewing">
+                    Interviewing
+                  </option>
+
+                  <option value="offer">
+                    Offer
+                  </option>
+
+                  <option value="rejected">
+                    Rejected
+                  </option>
+                </select>
+              </div>
+
               <button
                 type="submit"
-                className="btn btn-primary w-100"
+                className="application-add-button"
               >
-                Add
+                Add application
+                <span>＋</span>
               </button>
+            </form>
+          </section>
+
+          <section className="dashboard-section applications-section">
+
+            <div className="section-heading applications-heading">
+              <div>
+                <p className="section-eyebrow">
+                  Your search
+                </p>
+
+                <h2>Applications</h2>
+              </div>
+
+              <div className="filter-control">
+                <label htmlFor="filter">
+                  Filter
+                </label>
+
+                <select
+                  id="filter"
+                  value={filter}
+                  onChange={(event) =>
+                    setFilter(event.target.value)
+                  }
+                >
+                  <option value="all">
+                    All statuses
+                  </option>
+
+                  <option value="applied">
+                    Applied
+                  </option>
+
+                  <option value="interviewing">
+                    Interviewing
+                  </option>
+
+                  <option value="offer">
+                    Offer
+                  </option>
+
+                  <option value="rejected">
+                    Rejected
+                  </option>
+                </select>
+              </div>
             </div>
-          </div>
-        </form>
-      </section>
 
-      <section>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h2 className="h4 mb-0">Applications</h2>
+            <div className="applications-table-wrapper">
+              <table className="applications-table">
 
-          <select
-            className="form-select"
-            style={{ width: '180px' }}
-            value={filter}
-            onChange={(event) =>
-              setFilter(event.target.value)
-            }
-          >
-            <option value="all">All statuses</option>
-            <option value="applied">Applied</option>
-            <option value="interviewing">
-              Interviewing
-            </option>
-            <option value="offer">Offer</option>
-            <option value="rejected">Rejected</option>
-          </select>
+                <thead>
+                  <tr>
+                    <th>Company</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {filteredApplications.map(
+                    (application) => (
+                      <tr key={application.id}>
+                        <td className="company-cell">
+                          {application.company}
+                        </td>
+
+                        <td>
+                          {application.role}
+                        </td>
+
+                        <td>
+                          <span
+                            className={`status-badge status-${application.status}`}
+                          >
+                            {application.status}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+
+              </table>
+            </div>
+
+          </section>
+
         </div>
-
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Company</th>
-              <th>Role</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredApplications.map((application) => (
-              <tr key={application.id}>
-                <td>{application.company}</td>
-                <td>{application.role}</td>
-                <td>{application.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      </div>
     </main>
   )
 }
