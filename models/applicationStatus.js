@@ -10,8 +10,8 @@ const applicationSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            trim: true,
-            default: 'Pending'
+            enum: ['applied', 'interviewing', 'offer', 'rejected'],
+            default: 'applied'
         },
         
         userID: {
@@ -31,3 +31,5 @@ const applicationSchema = new mongoose.Schema(
         versionKey: false
     }
 );
+
+module.exports = mongoose.model('Application', applicationSchema);

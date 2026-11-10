@@ -45,7 +45,7 @@ if(!company1)
             zipcode: 67890
         }
     );
-    company = {_id: result.insertedId};
+    company1 = {_id: result.insertedId};
 }
 
 const company1Str = company1._id.toString();
@@ -64,7 +64,7 @@ if(!company2)
             zipcode: 67890
         }
     );
-    company = {_id: result.insertedId};
+    company2 = {_id: result.insertedId};
 }
 
 const company2Str = company2._id.toString();
