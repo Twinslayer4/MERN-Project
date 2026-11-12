@@ -1,0 +1,31 @@
+info:
+  name: Create Application
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/users/{{userId}}/applications"
+  body:
+    type: json
+    data: |2-
+         {
+           "jobTitle": "SWE Intern",
+           "company": "Acme",
+           "notes": "Referred by a friend"
+         }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.setVar("appId", res.getBody()._id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

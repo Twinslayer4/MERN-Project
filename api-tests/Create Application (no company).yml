@@ -1,0 +1,21 @@
+info:
+  name: Create Application (no company)
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/users/{{userId}}/applications"
+  body:
+    type: json
+    data: '{ "jobTitle": "x" }'
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

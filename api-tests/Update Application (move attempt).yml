@@ -1,0 +1,21 @@
+info:
+  name: Update Application (move attempt)
+  type: http
+  seq: 14
+
+http:
+  method: PATCH
+  url: "{{baseURL}}/api/applications/{{appId}}"
+  body:
+    type: json
+    data: '{ "status": "interviewing" }'
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
