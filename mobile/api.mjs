@@ -1,6 +1,9 @@
 const baseUrl = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, '');
 export const hasApi = Boolean(baseUrl);
 
+const suggestionsPath = process.env.EXPO_PUBLIC_SUGGESTIONS_PATH?.trim();
+export const hasSuggestionsApi = hasApi && Boolean(suggestionsPath?.startsWith('/api/'));
+
 export class ApiError extends Error {
   constructor(message, status = 0) {
     super(message);
@@ -9,11 +12,11 @@ export class ApiError extends Error {
 }
 
 async function request(path, {
-  body, token, method = body ? 'POST' : 'GET', upload,
+  body, token, method = body ? 'POST' : 'GET', upload, timeoutMs = upload ? 60000 : 12000,
 } = {}) {
   if (!hasApi) throw new ApiError('Set EXPO_PUBLIC_API_URL to connect to your account.');
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), upload ? 60000 : 12000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const headers = { Accept: 'application/json' };
     let payload;
@@ -81,4 +84,39 @@ export async function uploadResume(userId, token, name, file) {
 
 export function deleteResume(userId, token, resumeId) {
   return request(`${resumesPath(userId)}/${encodeURIComponent(resumeId)}`, { token, method: 'DELETE' });
+}
+
+export async function listApplications(userId, token) {
+  const applications = await request(`/api/users/${encodeURIComponent(userId)}/applications`, { token });
+  if (!Array.isArray(applications) || applications.some(application => typeof application?._id !== 'string')) {
+    throw new ApiError('The server did not return your saved applications.');
+  }
+
+  return applications.map(application => {
+    const jobDescription = typeof application.jobDescription === 'string' ? application.jobDescription.trim() : '';
+    return {
+      _id: application._id,
+      jobTitle: typeof application.jobTitle === 'string' && application.jobTitle.trim()
+        ? application.jobTitle.trim()
+        : 'Untitled application',
+      company: typeof application.company === 'string' ? application.company : '',
+      hasJobDescription: Boolean(jobDescription) || application.hasJobDescription === true,
+    };
+  });
+}
+
+export async function generateSuggestions(userId, token, resumeId, applicationIds) {
+  if (!hasSuggestionsApi) throw new ApiError('Live suggestions are unavailable.');
+
+  const path = suggestionsPath.replaceAll(':userId', encodeURIComponent(userId));
+  const { suggestions } = await request(path, { token, body: { resumeId, applicationIds }, timeoutMs: 60000 });
+  if (!Array.isArray(suggestions) || suggestions.some(suggestion => (
+    typeof suggestion?.category !== 'string' || typeof suggestion.title !== 'string'
+    || typeof suggestion.rationale !== 'string' || !Array.isArray(suggestion.nextSteps)
+    || suggestion.nextSteps.some(step => typeof step !== 'string')
+  ))) {
+    throw new ApiError('The server did not return usable suggestions.');
+  }
+
+  return suggestions;
 }

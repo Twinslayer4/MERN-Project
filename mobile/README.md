@@ -1,6 +1,6 @@
 # Nextstep mobile
 
-Expo app for iOS and Android using the Nextstep sage palette, serif headlines, and charcoal dark mode. The screens cover sign-in, account creation, and the signed-in user's profile with resume uploads.
+Expo app for iOS and Android using the Nextstep sage palette, serif headlines, and charcoal dark mode. The app includes sign-in, account creation, a profile with resume uploads, and a Suggestions tab.
 
 ## Open on your phone
 
@@ -52,3 +52,24 @@ All requests use the same bearer token as the profile endpoint. Give each reques
 | `POST /api/users/:userId/resumes` | Send the PDF bytes as the body, set `Content-Type: application/pdf`, and put `encodeURIComponent(file.name)` in `X-Resume-Filename`. Returns `{ resume: { _id, name, size, createdAt } }`. Repeating an upload of the same bytes returns the existing entry. |
 | `GET /api/users/:userId/resumes/:resumeId` | Returns the original PDF with an attachment filename. |
 | `DELETE /api/users/:userId/resumes/:resumeId` | Removes the resume and returns `204 No Content`. |
+
+## Suggestions
+
+In the **Suggestions** tab, choose a saved resume and one or more saved applications with job descriptions. The suggestions show project ideas and other ways to strengthen a candidacy, with practical next steps. The tab includes a labeled preview that uses sample data.
+
+### Backend handoff
+
+The application list uses the existing `GET /api/users/:userId/applications` endpoint from the application CRUD branch. It returns an array with `_id`, `jobTitle`, and `company`. Applications become eligible when the list also includes a nonempty `jobDescription` string or `hasJobDescription: true`. The API should use the saved job descriptions when generating suggestions.
+
+The current mobile branch's backend still needs the application list and job-description changes. Live generation also depends on the teammate's AI endpoint. This is a proposed request and response for coordinating the integration.
+
+| Request | Proposed contract |
+| --- | --- |
+| Path and method | `POST /api/users/:userId/suggestions` |
+| Authentication | The signed-in user's existing bearer token |
+| JSON body | `{ "resumeId": "...", "applicationIds": ["...", "..."] }` |
+| JSON response | `{ "suggestions": [{ "category": "Project", "title": "...", "rationale": "...", "nextSteps": ["..."] }] }` |
+
+The API resolves the IDs after checking that they belong to the authenticated user. The request references the stored PDF and saved applications by ID.
+
+After agreeing on the contract and implementing the endpoint, set `EXPO_PUBLIC_SUGGESTIONS_PATH=/api/users/:userId/suggestions` in `mobile/.env.local` and restart Expo. The app uses the configured Nextstep API origin, replaces `:userId` with the signed-in user's ID, and allows up to 60 seconds for a response.

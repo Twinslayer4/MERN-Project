@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable,
-  ScrollView, Text, TextInput, View, useColorScheme,
+  ScrollView, StyleSheet, Text, TextInput, View, useColorScheme,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -11,12 +11,22 @@ import { DMSans_400Regular, DMSans_600SemiBold } from '@expo-google-fonts/dm-san
 import { DMSerifDisplay_400Regular, DMSerifDisplay_400Regular_Italic } from '@expo-google-fonts/dm-serif-display';
 import { authenticate, getProfile, hasApi } from './api.mjs';
 import { ResumeSection } from './ResumeSection';
+import { SuggestionsScreen } from './SuggestionsScreen';
 import { makeStyles, palette } from './theme';
 
 const SESSION_KEY = 'nextstep.mobile.session';
 const SAMPLE_USER = {
   firstName: 'Jamie', lastName: 'Demo', login: 'jamie.demo', email: 'jamie@example.com',
 };
+const WORKSPACE_TABS = [['profile', 'Profile'], ['suggestions', 'Suggestions']];
+const navigation = StyleSheet.create({
+  header: { paddingBottom: 0 },
+  frame: { paddingTop: 2, paddingBottom: 10 },
+  tabs: { flexDirection: 'row', gap: 4, padding: 4, borderRadius: 13, borderWidth: 1 },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: 6, borderRadius: 9, borderWidth: 1 },
+  tabLabel: { textAlign: 'center' },
+  hidden: { display: 'none' },
+});
 
 function Button({ styles, title, onPress, secondary, disabled }) {
   return (
@@ -173,6 +183,45 @@ function Profile({ styles, colors, user, session, demo, created, notice, busy, o
   );
 }
 
+function Workspace({ styles, colors, session, demo, ...profileProps }) {
+  const [tab, setTab] = useState('profile');
+  const profileActive = tab === 'profile';
+
+  return (
+    <>
+      <View style={[styles.content, navigation.frame]}>
+        <View accessibilityRole="tablist" style={[navigation.tabs, { backgroundColor: colors.tint, borderColor: colors.line }]}>
+          {WORKSPACE_TABS.map(([id, label]) => {
+            const selected = tab === id;
+            return (
+              <Pressable key={id} accessibilityRole="tab" accessibilityState={{ selected }}
+                onPress={() => setTab(id)} style={({ pressed }) => [
+                  navigation.tab,
+                  { backgroundColor: selected || pressed ? colors.panel : 'transparent',
+                    borderColor: selected ? colors.line : 'transparent' },
+                ]}>
+                <Text style={[styles.link, navigation.tabLabel, { color: selected ? colors.ink : colors.muted }]}>{label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+      <ScrollView style={!profileActive && navigation.hidden} accessibilityElementsHidden={!profileActive}
+        importantForAccessibility={profileActive ? 'auto' : 'no-hide-descendants'} keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.content}>
+        <Profile {...profileProps} styles={styles} colors={colors} session={session} demo={demo}
+          user={demo ? SAMPLE_USER : session.user} />
+      </ScrollView>
+      <ScrollView style={profileActive && navigation.hidden} accessibilityElementsHidden={profileActive}
+        importantForAccessibility={profileActive ? 'no-hide-descendants' : 'auto'} keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.content}>
+        <SuggestionsScreen styles={styles} colors={colors} session={session} demo={demo} active={!profileActive}
+          onOpenProfile={() => setTab('profile')} />
+      </ScrollView>
+    </>
+  );
+}
+
 function Nextstep() {
   const systemTheme = useColorScheme();
   const [theme, setTheme] = useState(null);
@@ -267,7 +316,7 @@ function Nextstep() {
         <View style={styles.loading}><ActivityIndicator color={colors.accent} /><Text style={styles.bodyText}>Opening Nextstep…</Text></View>
       ) : (
         <KeyboardAvoidingView style={styles.keyboard} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView key={session || demo ? 'profile' : mode} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+          <View style={[styles.content, navigation.header]}>
             <View style={styles.header}>
               <View style={styles.brand}>
                 <View style={styles.mark}><Text style={styles.markText}>n↗</Text></View>
@@ -278,15 +327,17 @@ function Nextstep() {
                 <Text style={styles.themeIcon}>{dark ? '☀' : '☾'}</Text>
               </Pressable>
             </View>
-            {session || demo ? (
-              <Profile styles={styles} colors={colors} user={demo ? SAMPLE_USER : session.user}
-                session={session} demo={demo} created={created}
-                notice={notice} busy={busy} onRefresh={refresh} onSignOut={signOut} />
-            ) : (
+          </View>
+          {session || demo ? (
+            <Workspace key={session?.user._id || 'demo'} styles={styles} colors={colors}
+              session={session} demo={demo} created={created}
+              notice={notice} busy={busy} onRefresh={refresh} onSignOut={signOut} />
+          ) : (
+            <ScrollView key={mode} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
               <AuthScreen mode={mode} changeMode={value => { setMode(value); setNotice(''); }} colors={colors} styles={styles}
                 onSession={startSession} onPreview={() => setDemo(true)} initialError={notice} />
-            )}
-          </ScrollView>
+            </ScrollView>
+          )}
         </KeyboardAvoidingView>
       )}
     </SafeAreaView>
