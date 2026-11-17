@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Nextstep",
+    "slug": "nextstep-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.nextstep.mobile",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.nextstep.mobile"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-font"
+    ]
+  }
+}
