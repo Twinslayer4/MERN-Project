@@ -1,0 +1,21 @@
+info:
+  name: Delete Application
+  type: http
+  seq: 15
+
+http:
+  method: PATCH
+  url: "{{baseURL}}/api/applications/{{appId}}"
+  body:
+    type: json
+    data: '{ "userID": "000000000000000000000000" }'
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
