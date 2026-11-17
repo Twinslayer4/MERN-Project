@@ -26,6 +26,18 @@ Start the MERN API and MongoDB using the repository's backend setup. Copy `.env.
 
 The device saves the token and user ID in Expo SecureStore. Sign-out clears the saved session. Passwords are sent to the configured API during authentication and are never saved by the mobile app. Use test credentials on a local HTTP development network.
 
+### When a phone can load Expo but cannot reach port 5000
+
+Keep Docker Compose running and use the Metro LAN address for both Expo and the API. In `mobile/.env.local`, set the following values, using the computer's current Wi-Fi address.
+
+```dotenv
+EXPO_PUBLIC_API_URL=http://192.168.1.42:8081
+NEXTSTEP_DEV_API_PROXY=1
+```
+
+Restart Metro with `npm start` and reopen Expo Go. Check `http://192.168.1.42:8081/api/ping` from the phone first. Metro forwards `/api/` requests on the configured LAN address to port 5000 on the same Wi-Fi address.
+
+
 ## Upload a resume
 
 After signing in, tap **Upload a PDF** in **Resumes** and choose a file from the device picker. Each PDF can be up to 5 MB. Saved resumes appear in the account's list after upload and are available after signing in again. **Remove** deletes the file from the account after confirmation. Use a sample PDF when testing over local HTTP.
