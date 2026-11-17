@@ -10,6 +10,7 @@ import { useFonts } from 'expo-font';
 import { DMSans_400Regular, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import { DMSerifDisplay_400Regular, DMSerifDisplay_400Regular_Italic } from '@expo-google-fonts/dm-serif-display';
 import { authenticate, getProfile, hasApi } from './api.mjs';
+import { ResumeSection } from './ResumeSection';
 import { makeStyles, palette } from './theme';
 
 const SESSION_KEY = 'nextstep.mobile.session';
@@ -134,7 +135,7 @@ function AuthScreen({ mode, changeMode, colors, styles, onSession, onPreview, in
   );
 }
 
-function Profile({ styles, user, demo, created, notice, busy, onRefresh, onSignOut }) {
+function Profile({ styles, colors, user, session, demo, created, notice, busy, onRefresh, onSignOut }) {
   const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.login || 'Nextstep member';
   const initials = displayName.split(/\s+/).slice(0, 2).map(part => part[0]?.toUpperCase()).join('');
   return (
@@ -143,6 +144,8 @@ function Profile({ styles, user, demo, created, notice, busy, onRefresh, onSignO
         title={created ? 'Account created.' : 'Keep moving'} accent={created ? 'Welcome aboard.' : 'forward.'}
         description="Your Nextstep account, all in one place." />
       <View style={styles.profile}>
+        <ResumeSection key={user._id || 'demo'} styles={styles} colors={colors}
+          session={session} demo={demo} disabled={busy} />
         <View style={styles.card}>
           <View style={styles.profileHead}>
             <View style={styles.avatar}><Text style={styles.initials}>{initials}</Text></View>
@@ -276,7 +279,8 @@ function Nextstep() {
               </Pressable>
             </View>
             {session || demo ? (
-              <Profile styles={styles} user={demo ? SAMPLE_USER : session.user} demo={demo} created={created}
+              <Profile styles={styles} colors={colors} user={demo ? SAMPLE_USER : session.user}
+                session={session} demo={demo} created={created}
                 notice={notice} busy={busy} onRefresh={refresh} onSignOut={signOut} />
             ) : (
               <AuthScreen mode={mode} changeMode={value => { setMode(value); setNotice(''); }} colors={colors} styles={styles}

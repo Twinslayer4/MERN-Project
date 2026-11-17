@@ -1,6 +1,6 @@
 # Nextstep mobile
 
-Expo app for iOS and Android using the Nextstep sage palette, serif headlines, and charcoal dark mode. The screens cover sign-in, account creation, and the signed-in user's profile.
+Expo app for iOS and Android using the Nextstep sage palette, serif headlines, and charcoal dark mode. The screens cover sign-in, account creation, and the signed-in user's profile with resume uploads.
 
 ## Open on your phone
 
@@ -25,3 +25,18 @@ Start the MERN API and MongoDB using the repository's backend setup. Copy `.env.
 - Profile refresh and session restore use `GET /api/users/:userId` with the bearer token.
 
 The device saves the token and user ID in Expo SecureStore. Sign-out clears the saved session. Passwords are sent to the configured API during authentication and are never saved by the mobile app. Use test credentials on a local HTTP development network.
+
+## Upload a resume
+
+After signing in, tap **Upload a PDF** in **Resumes** and choose a file from the device picker. Each PDF can be up to 5 MB. Saved resumes appear in the account's list after upload and are available after signing in again. **Remove** deletes the file from the account after confirmation. Use a sample PDF when testing over local HTTP.
+
+### Resume API
+
+All requests use the same bearer token as the profile endpoint. Give each request the signed-in user's ID in the path. MongoDB stores the original PDF bytes and file metadata in the `resumes` collection.
+
+| Method and path | Request or response |
+| --- | --- |
+| `GET /api/users/:userId/resumes` | Returns `{ resumes: [...] }`, newest first. |
+| `POST /api/users/:userId/resumes` | Send the PDF bytes as the body, set `Content-Type: application/pdf`, and put `encodeURIComponent(file.name)` in `X-Resume-Filename`. Returns `{ resume: { _id, name, size, createdAt } }`. Repeating an upload of the same bytes returns the existing entry. |
+| `GET /api/users/:userId/resumes/:resumeId` | Returns the original PDF with an attachment filename. |
+| `DELETE /api/users/:userId/resumes/:resumeId` | Removes the resume and returns `204 No Content`. |

@@ -8,20 +8,34 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { body, token } = {}) {
+async function request(path, {
+  body, token, method = body ? 'POST' : 'GET', upload,
+} = {}) {
   if (!hasApi) throw new ApiError('Set EXPO_PUBLIC_API_URL to connect to your account.');
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
+  const timeout = setTimeout(() => controller.abort(), upload ? 60000 : 12000);
   try {
     const headers = { Accept: 'application/json' };
-    if (body) headers['Content-Type'] = 'application/json';
+    let payload;
+    let send = fetch;
+    if (upload) {
+      const expo = await import('expo/fetch');
+      send = expo.fetch;
+      headers['Content-Type'] = 'application/pdf';
+      headers['X-Resume-Filename'] = encodeURIComponent(upload.name);
+      payload = upload.file;
+    } else if (body) {
+      headers['Content-Type'] = 'application/json';
+      payload = JSON.stringify(body);
+    }
     if (token) headers.Authorization = `Bearer ${token}`;
-    const response = await fetch(`${baseUrl}${path}`, {
-      method: body ? 'POST' : 'GET',
+    const response = await send(`${baseUrl}${path}`, {
+      method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: payload,
       signal: controller.signal,
     });
+    if (response.status === 204 && method === 'DELETE') return;
     const data = await response.json().catch(() => null);
     if (!response.ok) {
       const message = typeof data?.error === 'string' ? data.error : `The server returned ${response.status}.`;
@@ -47,4 +61,24 @@ export async function authenticate(mode, body) {
 
 export function getProfile(userId, token) {
   return request(`/api/users/${encodeURIComponent(userId)}`, { token });
+}
+
+function resumesPath(userId) {
+  return `/api/users/${encodeURIComponent(userId)}/resumes`;
+}
+
+export async function listResumes(userId, token) {
+  const { resumes } = await request(resumesPath(userId), { token });
+  if (!Array.isArray(resumes)) throw new ApiError('The server did not return your resume list.');
+  return resumes;
+}
+
+export async function uploadResume(userId, token, name, file) {
+  const { resume } = await request(resumesPath(userId), { token, method: 'POST', upload: { name, file } });
+  if (typeof resume?._id !== 'string') throw new ApiError('The server did not confirm the upload.');
+  return resume;
+}
+
+export function deleteResume(userId, token, resumeId) {
+  return request(`${resumesPath(userId)}/${encodeURIComponent(resumeId)}`, { token, method: 'DELETE' });
 }
