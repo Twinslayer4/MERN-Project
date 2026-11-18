@@ -1,13 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearSession, getSession } from '../utils/session'
+import { apiFetch } from '../utils/api'
 import '../styles/dashboard.css'
 
 interface Application {
-  id: number
+  id: string
   company: string
   role: string
   status: string
+}
+
+interface ApiApplication {
+  _id: string
+  userID: string
+  jobTitle: string
+  company: string
+  status: string
+  dateApplied: string
+  notes: string
 }
 
 function DashboardPage() {
@@ -19,43 +30,199 @@ function DashboardPage() {
   const [status, setStatus] = useState('applied')
   const [filter, setFilter] = useState('all')
 
-  const [applications, setApplications] = useState<Application[]>([
-    {
-      id: 1,
-      company: 'Linear',
-      role: 'Product Design Intern',
-      status: 'interviewing',
-    },
-    {
-      id: 2,
-      company: 'Notion',
-      role: 'Frontend Developer',
-      status: 'applied',
-    },
-  ])
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editCompany, setEditCompany] = useState('')
+  const [editRole, setEditRole] = useState('')
+
+  const [applications, setApplications] = useState<Application[]>([])
+
+  useEffect(() => {
+    const loadApplications = async () => {
+      if (!session) {
+        return
+      }
+
+      const result = await apiFetch<ApiApplication[]>(
+        `/api/users/${session.user._id}/applications`
+      )
+
+      if (!result.ok) {
+        console.error(
+          'Failed to load applications:',
+          result.error
+        )
+        return
+      }
+
+      const loadedApplications: Application[] =
+        result.data.map((application) => ({
+          id: application._id,
+          company: application.company,
+          role: application.jobTitle,
+          status: application.status,
+        }))
+
+      setApplications(loadedApplications)
+    }
+
+    loadApplications()
+  }, [])
 
   const handleLogout = () => {
     clearSession()
     navigate('/login')
   }
 
-  const handleAddApplication = (
+  const handleAddApplication = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault()
 
-    const newApplication: Application = {
-      id: Date.now(),
-      company,
-      role,
-      status,
+    if (!session) {
+      return
     }
 
-    setApplications([...applications, newApplication])
+    const result = await apiFetch<ApiApplication>(
+      `/api/users/${session.user._id}/applications`,
+      {
+        method: 'POST',
+        body: {
+          company,
+          jobTitle: role,
+          status,
+        },
+      }
+    )
+
+    if (!result.ok) {
+      console.error(
+        'Failed to create application:',
+        result.error
+      )
+      return
+    }
+
+    const savedApplication: Application = {
+      id: result.data._id,
+      company: result.data.company,
+      role: result.data.jobTitle,
+      status: result.data.status,
+    }
+
+    setApplications((currentApplications) => [
+      savedApplication,
+      ...currentApplications,
+    ])
 
     setCompany('')
     setRole('')
     setStatus('applied')
+  }
+
+  const handleStatusChange = async (
+  applicationId: string,
+  newStatus: string
+  ) => {
+    const result = await apiFetch<ApiApplication>(
+      `/api/applications/${applicationId}`,
+      {
+        method: 'PATCH',
+        body: {
+          status: newStatus,
+        },
+      }
+    )
+
+    if (!result.ok) {
+      console.error(
+        'Failed to update application status:',
+        result.error
+      )
+      return
+    }
+
+    setApplications((currentApplications) =>
+      currentApplications.map((application) =>
+        application.id === applicationId
+          ? {
+              ...application,
+              status: result.data.status,
+            }
+          : application
+      )
+    )
+  }
+
+  const handleStartEdit = (application: Application) => {
+    setEditingId(application.id)
+    setEditCompany(application.company)
+    setEditRole(application.role)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingId(null)
+    setEditCompany('')
+    setEditRole('')
+  }
+
+  const handleSaveEdit = async (applicationId: string) => {
+    if (!editCompany.trim() || !editRole.trim()) {
+      return
+    }
+
+    const result = await apiFetch<ApiApplication>(
+      `/api/applications/${applicationId}`,
+      {
+        method: 'PATCH',
+        body: {
+          company: editCompany,
+          jobTitle: editRole,
+        },
+      }
+    )
+  
+
+    if(!result.ok) {
+      console.error('Failed to edit application', result.error)
+      return
+    }
+
+    setApplications((currentApplications) => 
+      currentApplications.map((application) => 
+        application.id === applicationId 
+          ? {
+            ...application,
+            company: result.data.company,
+            role: result.data.jobTitle,
+            }
+          : application
+        )
+      )
+
+    handleCancelEdit()
+  }
+
+  const handleDeleteApplication = async (applicationId: string) => {
+    const result = await apiFetch(
+      `/api/applications/${applicationId}`,
+      {
+        method: 'DELETE',
+      }
+    )
+
+    if (!result.ok) {
+      console.error(
+        'Failed to delete application:',
+        result.error
+      )
+      return
+    }
+
+    setApplications((currentApplications) =>
+      currentApplications.filter(
+        (application) => application.id !== applicationId
+      )
+    )
   }
 
   const filteredApplications =
@@ -310,6 +477,7 @@ function DashboardPage() {
                     <th>Company</th>
                     <th>Role</th>
                     <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
 
@@ -318,19 +486,101 @@ function DashboardPage() {
                     (application) => (
                       <tr key={application.id}>
                         <td className="company-cell">
-                          {application.company}
+                          {editingId === application.id ? (
+                            <input
+                            type="text"
+                            value={editCompany}
+                            onChange={(event) =>
+                              setEditCompany(event.target.value)
+                            }
+                          />
+                        ) : (
+                          application.company
+                        )}
                         </td>
 
                         <td>
-                          {application.role}
+                          {editingId === application.id ? (
+                            <input
+                              type="text"
+                              value={editRole}
+                              onChange={(event) =>
+                                setEditRole(event.target.value)
+                              }
+                            />
+                          ) : (
+                            application.role
+                          )}
                         </td>
 
                         <td>
-                          <span
+                          <select
                             className={`status-badge status-${application.status}`}
+                            value={application.status}
+                            onChange={(event) =>
+                              handleStatusChange(
+                                application.id,
+                                event.target.value
+                              )
+                            }
                           >
-                            {application.status}
-                          </span>
+                            <option value="applied">
+                              Applied
+                            </option>
+
+                            <option value="interviewing">
+                              Interviewing
+                            </option>
+
+                            <option value="offer">
+                              Offer
+                            </option>
+
+                            <option value="rejected">
+                              Rejected
+                            </option>
+                          </select>
+                        </td>
+                        <td>
+                          {editingId === application.id ? (
+                            <>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleSaveEdit(application.id)
+                              }
+                            >
+                                Save
+                              </button>
+
+                              <button
+                              type="button"
+                              onClick={handleCancelEdit}
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleStartEdit(application)
+                                }
+                              >
+                                Edit
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteApplication(application.id)
+                                }
+                              >
+                                Delete
+                              </button>
+                            </>
+                          )}
                         </td>
                       </tr>
                     )
