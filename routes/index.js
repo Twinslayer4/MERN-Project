@@ -8,6 +8,7 @@ router.get('/ping', (req, res) => {
 });
 
 router.use('/auth', require('./auth'));
+router.use('/lookup', require('./lookup'));
 router.use('/users', require('./users'));
 router.use('/applications', require('./applications'));
 
