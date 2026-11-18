@@ -1,4 +1,6 @@
 const express = require('express');
+const resumes = require('../controllers/resumesController');
+const uploadResume = require('../middleware/uploadResume');
 const users = require('../controllers/usersController');
 const apps = require('../controllers/applicationsController');  
 const validateObjectId = require('../middleware/validateObjectId');
@@ -22,5 +24,10 @@ router
   .route('/:userId/applications')
   .get(requireAuth, requireSelfOrAdmin, apps.listApplications)
   .post(requireAuth, requireSelf, apps.createApplication);
+
+router
+  .route('/:userId/resumes')
+  .get(requireAuth, requireSelf, resumes.listResumes)
+  .post(requireAuth, requireSelf, uploadResume, resumes.createResume);
 
 module.exports = router;

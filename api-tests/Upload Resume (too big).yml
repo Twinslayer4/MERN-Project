@@ -1,0 +1,26 @@
+info:
+  name: Upload Resume (too big)
+  type: http
+  seq: 19
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/users/{{userId}}/resumes"
+  body:
+    type: multipart-form
+    data:
+      - name: resume
+        type: file
+        value:
+          - C:\Users\szoff\test-6mb.pdf
+        contentType: application/pdf
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

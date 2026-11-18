@@ -1,0 +1,18 @@
+info:
+  name: Delete Resume
+  type: http
+  seq: 23
+
+http:
+  method: DELETE
+  url: "{{baseURL}}/api/resumes/{{resumeId}}"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
