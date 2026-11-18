@@ -1,15 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { clearSession, getSession } from '../utils/session'
+import { getSession } from '../utils/session'
 import { apiFetch } from '../utils/api'
-import '../styles/dashboard.css'
-
-interface Application {
-  id: string
-  company: string
-  role: string
-  status: string
-}
+import '../styles/overview.css'
 
 interface ApiApplication {
   _id: string
@@ -22,19 +15,12 @@ interface ApiApplication {
 }
 
 function DashboardPage() {
-  const navigate = useNavigate()
   const session = getSession()
 
-  const [company, setCompany] = useState('')
-  const [role, setRole] = useState('')
-  const [status, setStatus] = useState('applied')
-  const [filter, setFilter] = useState('all')
+  const navigate = useNavigate()
 
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editCompany, setEditCompany] = useState('')
-  const [editRole, setEditRole] = useState('')
-
-  const [applications, setApplications] = useState<Application[]>([])
+  const [applications, setApplications] =
+    useState<ApiApplication[]>([])
 
   useEffect(() => {
     const loadApplications = async () => {
@@ -54,547 +40,225 @@ function DashboardPage() {
         return
       }
 
-      const loadedApplications: Application[] =
-        result.data.map((application) => ({
-          id: application._id,
-          company: application.company,
-          role: application.jobTitle,
-          status: application.status,
-        }))
-
-      setApplications(loadedApplications)
+      setApplications(result.data)
     }
 
     loadApplications()
   }, [])
 
-  const handleLogout = () => {
-    clearSession()
-    navigate('/login')
-  }
-
-  const handleAddApplication = async (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault()
-
-    if (!session) {
-      return
-    }
-
-    const result = await apiFetch<ApiApplication>(
-      `/api/users/${session.user._id}/applications`,
-      {
-        method: 'POST',
-        body: {
-          company,
-          jobTitle: role,
-          status,
-        },
-      }
-    )
-
-    if (!result.ok) {
-      console.error(
-        'Failed to create application:',
-        result.error
-      )
-      return
-    }
-
-    const savedApplication: Application = {
-      id: result.data._id,
-      company: result.data.company,
-      role: result.data.jobTitle,
-      status: result.data.status,
-    }
-
-    setApplications((currentApplications) => [
-      savedApplication,
-      ...currentApplications,
-    ])
-
-    setCompany('')
-    setRole('')
-    setStatus('applied')
-  }
-
-  const handleStatusChange = async (
-  applicationId: string,
-  newStatus: string
-  ) => {
-    const result = await apiFetch<ApiApplication>(
-      `/api/applications/${applicationId}`,
-      {
-        method: 'PATCH',
-        body: {
-          status: newStatus,
-        },
-      }
-    )
-
-    if (!result.ok) {
-      console.error(
-        'Failed to update application status:',
-        result.error
-      )
-      return
-    }
-
-    setApplications((currentApplications) =>
-      currentApplications.map((application) =>
-        application.id === applicationId
-          ? {
-              ...application,
-              status: result.data.status,
-            }
-          : application
-      )
-    )
-  }
-
-  const handleStartEdit = (application: Application) => {
-    setEditingId(application.id)
-    setEditCompany(application.company)
-    setEditRole(application.role)
-  }
-
-  const handleCancelEdit = () => {
-    setEditingId(null)
-    setEditCompany('')
-    setEditRole('')
-  }
-
-  const handleSaveEdit = async (applicationId: string) => {
-    if (!editCompany.trim() || !editRole.trim()) {
-      return
-    }
-
-    const result = await apiFetch<ApiApplication>(
-      `/api/applications/${applicationId}`,
-      {
-        method: 'PATCH',
-        body: {
-          company: editCompany,
-          jobTitle: editRole,
-        },
-      }
-    )
-  
-
-    if(!result.ok) {
-      console.error('Failed to edit application', result.error)
-      return
-    }
-
-    setApplications((currentApplications) => 
-      currentApplications.map((application) => 
-        application.id === applicationId 
-          ? {
-            ...application,
-            company: result.data.company,
-            role: result.data.jobTitle,
-            }
-          : application
-        )
-      )
-
-    handleCancelEdit()
-  }
-
-  const handleDeleteApplication = async (applicationId: string) => {
-    const result = await apiFetch(
-      `/api/applications/${applicationId}`,
-      {
-        method: 'DELETE',
-      }
-    )
-
-    if (!result.ok) {
-      console.error(
-        'Failed to delete application:',
-        result.error
-      )
-      return
-    }
-
-    setApplications((currentApplications) =>
-      currentApplications.filter(
-        (application) => application.id !== applicationId
-      )
-    )
-  }
-
-  const filteredApplications =
-    filter === 'all'
-      ? applications
-      : applications.filter(
-          (application) => application.status === filter
-        )
-  
   const totalApplications = applications.length
 
   const interviewingApplications = applications.filter(
-    (application) => application.status === 'interviewing'
+    (application) =>
+      application.status === 'interviewing'
   ).length
 
-  const offerApplications = applications.filter(
-    (application) => application.status === 'offer'
+  const offers = applications.filter(
+    (application) =>
+      application.status === 'offer'
   ).length
+
+  const activeApplications = applications.filter(
+    (application) =>
+      application.status !== 'rejected'
+  )
+
+  const getNextStep = (
+    application: ApiApplication
+  ) => {
+    switch (application.status) {
+      case 'interviewing':
+        return 'Prepare for your next interview'
+
+      case 'offer':
+        return 'Review your offer and next steps'
+
+      case 'applied':
+        return 'Check application progress'
+
+      case 'rejected':
+        return 'Review notes and move forward'
+
+      default:
+        return 'Review application'
+    }
+  }
 
   return (
-    <main className="dashboard-page">
-      <div className="dashboard-shell">
+    <div className="overview-page">
 
-        <header className="dashboard-header">
-          <div className="dashboard-brand">
-            <span className="dashboard-logo">n↗</span>
-            <span className="dashboard-brand-name">
-              nextstep
-            </span>
+      <header className="overview-header">
+        <div>
+          <p className="overview-eyebrow">
+            Overview
+          </p>
+
+          <h1>
+            Good to see you,{' '}
+            {session?.user.firstName}.
+          </h1>
+
+          <p className="overview-subtitle">
+            Here’s what’s happening with your job search.
+          </p>
+        </div>
+
+        <button
+          className="overview-primary-button"
+          onClick={() => navigate('/applications')}
+        >
+          + Add application
+        </button>
+      </header>
+
+      <section className="overview-summary">
+        <div className="summary-item">
+          <span>Applications</span>
+          <strong>{totalApplications}</strong>
+        </div>
+
+        <div className="summary-item">
+          <span>Interviewing</span>
+          <strong>{interviewingApplications}</strong>
+        </div>
+
+        <div className="summary-item">
+          <span>Offers</span>
+          <strong>{offers}</strong>
+        </div>
+      </section>
+
+      <section className="overview-section">
+        <div className="overview-section-heading">
+          <div>
+            <p className="overview-eyebrow">
+              Focus
+            </p>
+
+            <h2>Your next steps</h2>
           </div>
 
-          <div className="dashboard-header-right">
-            <span className="dashboard-user">
-              {session?.user.firstName}
-            </span>
+          <span className="section-count">
+            {activeApplications.length} active
+          </span>
+        </div>
 
-            <button
-              type="button"
-              className="dashboard-logout"
-              onClick={handleLogout}
-            >
-              Log out
-            </button>
-          </div>
-        </header>
+        <div className="next-step-list">
+          {activeApplications.length === 0 ? (
+            <div className="overview-empty">
+              <h3>No active applications yet.</h3>
 
-        <div className="dashboard-content">
+              <p>
+                Add an application to start building
+                your job search workspace.
+              </p>
+            </div>
+          ) : (
+            activeApplications
+              .slice(0, 4)
+              .map((application) => (
+                <article
+                  className="next-step-item"
+                  key={application._id}
+                >
+                  <div className="next-step-company">
+                    {application.company
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
 
-          <section className="dashboard-intro">
+                  <div className="next-step-content">
+                    <div className="next-step-title-row">
+                      <div>
+                        <h3>{application.company}</h3>
+
+                        <p>
+                          {application.jobTitle}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`next-step-status status-${application.status}`}
+                      >
+                        {application.status}
+                      </span>
+                    </div>
+
+                    <div className="next-step-action">
+                      <span>
+                        {getNextStep(application)}
+                      </span>
+
+                      <span>→</span>
+                    </div>
+                  </div>
+                </article>
+              ))
+          )}
+        </div>
+      </section>
+
+      <section className="overview-grid">
+
+        <div className="overview-panel">
+          <div className="overview-section-heading">
             <div>
-              <p className="dashboard-eyebrow">
-                Your workspace
+              <p className="overview-eyebrow">
+                Pipeline
               </p>
 
-              <h1 className="dashboard-title">
-                Welcome back, {session?.user.firstName}.
-              </h1>
-
-              <p className="dashboard-subtitle">
-                Keep track of every opportunity and see where
-                your job search is heading.
-              </p>
+              <h2>Application progress</h2>
             </div>
-          </section>
+          </div>
 
-          <section className="dashboard-stats">
-
-            <div className="stat-card">
-              <span className="stat-label">
-                Total applications
-              </span>
-
-              <strong className="stat-number">
-                {totalApplications}
-              </strong>
-
-              <span className="stat-note">
-                Opportunities tracked
-              </span>
+          <div className="pipeline-row">
+            <div>
+              <strong>{totalApplications}</strong>
+              <span>Applied</span>
             </div>
 
-            <div className="stat-card">
-              <span className="stat-label">
-                Interviewing
-              </span>
+            <span className="pipeline-arrow">→</span>
 
-              <strong className="stat-number">
+            <div>
+              <strong>
                 {interviewingApplications}
               </strong>
-
-              <span className="stat-note">
-                Active conversations
-              </span>
+              <span>Interviewing</span>
             </div>
 
-            <div className="stat-card">
-              <span className="stat-label">
-                Offers
-              </span>
+            <span className="pipeline-arrow">→</span>
 
-              <strong className="stat-number">
-                {offerApplications}
-              </strong>
-
-              <span className="stat-note">
-                Offers received
-              </span>
+            <div>
+              <strong>{offers}</strong>
+              <span>Offers</span>
             </div>
-
-          </section>
-
-          <section className="dashboard-section">
-            <div className="section-heading">
-              <div>
-                <p className="section-eyebrow">
-                  New opportunity
-                </p>
-
-                <h2>Add an application</h2>
-              </div>
-            </div>
-
-            <form
-              className="application-form"
-              onSubmit={handleAddApplication}
-            >
-              <div className="dashboard-field">
-                <label htmlFor="company">
-                  Company
-                </label>
-
-                <input
-                  id="company"
-                  type="text"
-                  placeholder="e.g. Spotify"
-                  value={company}
-                  onChange={(event) =>
-                    setCompany(event.target.value)
-                  }
-                  required
-                />
-              </div>
-
-              <div className="dashboard-field">
-                <label htmlFor="role">
-                  Job title
-                </label>
-
-                <input
-                  id="role"
-                  type="text"
-                  placeholder="e.g. Software Engineer"
-                  value={role}
-                  onChange={(event) =>
-                    setRole(event.target.value)
-                  }
-                  required
-                />
-              </div>
-
-              <div className="dashboard-field">
-                <label htmlFor="status">
-                  Status
-                </label>
-
-                <select
-                  id="status"
-                  value={status}
-                  onChange={(event) =>
-                    setStatus(event.target.value)
-                  }
-                >
-                  <option value="applied">
-                    Applied
-                  </option>
-
-                  <option value="interviewing">
-                    Interviewing
-                  </option>
-
-                  <option value="offer">
-                    Offer
-                  </option>
-
-                  <option value="rejected">
-                    Rejected
-                  </option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                className="application-add-button"
-              >
-                Add application
-                <span>＋</span>
-              </button>
-            </form>
-          </section>
-
-          <section className="dashboard-section applications-section">
-
-            <div className="section-heading applications-heading">
-              <div>
-                <p className="section-eyebrow">
-                  Your search
-                </p>
-
-                <h2>Applications</h2>
-              </div>
-
-              <div className="filter-control">
-                <label htmlFor="filter">
-                  Filter
-                </label>
-
-                <select
-                  id="filter"
-                  value={filter}
-                  onChange={(event) =>
-                    setFilter(event.target.value)
-                  }
-                >
-                  <option value="all">
-                    All statuses
-                  </option>
-
-                  <option value="applied">
-                    Applied
-                  </option>
-
-                  <option value="interviewing">
-                    Interviewing
-                  </option>
-
-                  <option value="offer">
-                    Offer
-                  </option>
-
-                  <option value="rejected">
-                    Rejected
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div className="applications-table-wrapper">
-              <table className="applications-table">
-
-                <thead>
-                  <tr>
-                    <th>Company</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredApplications.map(
-                    (application) => (
-                      <tr key={application.id}>
-                        <td className="company-cell">
-                          {editingId === application.id ? (
-                            <input
-                            type="text"
-                            value={editCompany}
-                            onChange={(event) =>
-                              setEditCompany(event.target.value)
-                            }
-                          />
-                        ) : (
-                          application.company
-                        )}
-                        </td>
-
-                        <td>
-                          {editingId === application.id ? (
-                            <input
-                              type="text"
-                              value={editRole}
-                              onChange={(event) =>
-                                setEditRole(event.target.value)
-                              }
-                            />
-                          ) : (
-                            application.role
-                          )}
-                        </td>
-
-                        <td>
-                          <select
-                            className={`status-badge status-${application.status}`}
-                            value={application.status}
-                            onChange={(event) =>
-                              handleStatusChange(
-                                application.id,
-                                event.target.value
-                              )
-                            }
-                          >
-                            <option value="applied">
-                              Applied
-                            </option>
-
-                            <option value="interviewing">
-                              Interviewing
-                            </option>
-
-                            <option value="offer">
-                              Offer
-                            </option>
-
-                            <option value="rejected">
-                              Rejected
-                            </option>
-                          </select>
-                        </td>
-                        <td>
-                          {editingId === application.id ? (
-                            <>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleSaveEdit(application.id)
-                              }
-                            >
-                                Save
-                              </button>
-
-                              <button
-                              type="button"
-                              onClick={handleCancelEdit}
-                              >
-                                Cancel
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleStartEdit(application)
-                                }
-                              >
-                                Edit
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleDeleteApplication(application.id)
-                                }
-                              >
-                                Delete
-                              </button>
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  )}
-                </tbody>
-
-              </table>
-            </div>
-
-          </section>
-
+          </div>
         </div>
-      </div>
-    </main>
+
+        <div className="overview-panel">
+          <div className="overview-section-heading">
+            <div>
+              <p className="overview-eyebrow">
+                Coming soon
+              </p>
+
+              <h2>Upcoming interviews</h2>
+            </div>
+          </div>
+
+          <div className="overview-placeholder">
+            <span>Calendar</span>
+
+            <p>
+              Scheduled interviews will appear here
+              once calendar support is connected.
+            </p>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
   )
 }
 
