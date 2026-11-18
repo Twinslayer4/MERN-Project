@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { clearSession, getSession } from '../utils/session'
+import { getSession } from '../utils/session'
 import { apiFetch } from '../utils/api'
 import '../styles/applications.css'
 
@@ -71,11 +71,6 @@ function ApplicationsPage() {
 
     loadApplications()
   }, [])
-
-  const handleLogout = () => {
-    clearSession()
-    navigate('/login')
-  }
 
   const handleAddApplication = async (
     event: React.FormEvent<HTMLFormElement>
@@ -250,8 +245,6 @@ function ApplicationsPage() {
       return matchesStatus && matchesSearch
     }
   )
-  
-  const totalApplications = applications.length
 
   const interviewingApplications = applications.filter(
     (application) => application.status === 'interviewing'
