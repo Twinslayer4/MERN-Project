@@ -78,3 +78,6 @@ dist/
 out/
 *.min.*
 *.map
+
+# Resume upload
+uploads/
