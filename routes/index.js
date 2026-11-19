@@ -10,6 +10,7 @@ router.get('/ping', (req, res) => {
 router.use('/auth', require('./auth'));
 router.use('/users', require('./users'));
 router.use('/applications', require('./applications'));
+router.use('/admin', require('./admin'));
 router.use('/resumes', require('./resumes'));
 
 module.exports = router;
