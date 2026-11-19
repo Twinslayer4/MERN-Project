@@ -1,0 +1,275 @@
+.overview-page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.overview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 38px;
+}
+
+.overview-eyebrow {
+  margin: 0 0 8px;
+  color: #78847e;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.overview-header h1 {
+  margin: 0;
+  color: #17251f;
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+}
+
+.overview-subtitle {
+  margin: 12px 0 0;
+  color: #738078;
+  font-size: 15px;
+}
+
+.overview-primary-button {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  background: #17251f;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.overview-summary {
+  display: flex;
+  gap: 42px;
+  padding: 20px 0 30px;
+  border-top: 1px solid #deded7;
+  border-bottom: 1px solid #deded7;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.summary-item span {
+  color: #7b847f;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.summary-item strong {
+  color: #17251f;
+  font-size: 30px;
+  font-weight: 650;
+}
+
+.overview-section {
+  margin-top: 44px;
+}
+
+.overview-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.overview-section-heading h2 {
+  margin: 0;
+  color: #17251f;
+  font-size: 22px;
+  letter-spacing: -0.025em;
+}
+
+.section-count {
+  color: #89928d;
+  font-size: 13px;
+}
+
+.next-step-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.next-step-item {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid #dfdfd8;
+}
+
+.next-step-company {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: #e6e7df;
+  color: #17251f;
+  font-weight: 800;
+}
+
+.next-step-content {
+  flex: 1;
+}
+
+.next-step-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.next-step-title-row h3 {
+  margin: 0;
+  color: #17251f;
+  font-size: 16px;
+}
+
+.next-step-title-row p {
+  margin: 4px 0 0;
+  color: #818a85;
+  font-size: 13px;
+}
+
+.next-step-status {
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #e6e7df;
+  color: #4c5952;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-interviewing {
+  background: #fff2c6;
+  color: #7c5d00;
+}
+
+.status-offer {
+  background: #d7f36b;
+  color: #263313;
+}
+
+.status-rejected {
+  background: #f2dddd;
+  color: #8d3a3a;
+}
+
+.next-step-action {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  color: #334239;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 0.9fr;
+  gap: 24px;
+  margin-top: 44px;
+}
+
+.overview-panel {
+  padding: 24px;
+  border: 1px solid #deded7;
+  border-radius: 14px;
+  background: #faf9f5;
+}
+
+.pipeline-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-top: 26px;
+}
+
+.pipeline-row div {
+  display: flex;
+  flex-direction: column;
+}
+
+.pipeline-row strong {
+  color: #17251f;
+  font-size: 28px;
+}
+
+.pipeline-row span {
+  color: #7a837e;
+  font-size: 12px;
+}
+
+.pipeline-arrow {
+  color: #afb5b1;
+}
+
+.overview-placeholder {
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.overview-placeholder span {
+  color: #17251f;
+  font-weight: 700;
+}
+
+.overview-placeholder p {
+  max-width: 330px;
+  margin: 8px 0 0;
+  color: #818a85;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.overview-empty {
+  padding: 30px 0;
+  border-top: 1px solid #dfdfd8;
+}
+
+.overview-empty h3 {
+  margin: 0;
+  color: #17251f;
+}
+
+.overview-empty p {
+  color: #7a847e;
+}
+
+@media (max-width: 900px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .overview-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 650px) {
+  .overview-summary {
+    gap: 24px;
+  }
+
+  .pipeline-row {
+    grid-template-columns: 1fr;
+  }
+
+  .pipeline-arrow {
+    display: none;
+  }
+}

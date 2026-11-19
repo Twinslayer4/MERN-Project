@@ -1,0 +1,26 @@
+info:
+  name: Upload Resume (wrong field)
+  type: http
+  seq: 18
+
+http:
+  method: POST
+  url: "{{baseURL}}/api/users/{{userId}}/resumes"
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value:
+          - C:\Users\szoff\Downloads\fake.pdf.txt
+        contentType: text/plain; charset=utf-8
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
