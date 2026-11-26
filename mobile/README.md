@@ -23,7 +23,7 @@ Start the MERN API and MongoDB using the repository's backend setup. Copy `.env.
 - Sign in uses `POST /api/auth/login`.
 - Create an account uses `POST /api/users` and opens Home on success.
 - Profile refresh and session restore use `GET /api/users/:userId` with the bearer token.
-- Home lists and creates applications with `GET` and `POST /api/users/:userId/applications`. Point the app at a backend with these routes from `main`.
+- Home lists and creates applications with `GET` and `POST /api/users/:userId/applications` using the signed-in user's bearer token. Run the API from this checkout for local testing.
 
 The device saves the token and user ID in Expo SecureStore. Sign-out clears the saved session. Passwords are sent to the configured API during authentication and are never saved by the mobile app. Use test credentials on a local HTTP development network.
 
@@ -60,9 +60,9 @@ In the **Suggestions** tab, choose a saved resume and one or more saved applicat
 
 ### Backend handoff
 
-The application list uses the existing `GET /api/users/:userId/applications` endpoint from the application CRUD branch. It returns an array with `_id`, `jobTitle`, and `company`. Applications become eligible when the list also includes a nonempty `jobDescription` string or `hasJobDescription: true`. The API should use the saved job descriptions when generating suggestions.
+The application list uses `GET /api/users/:userId/applications`. It returns an array with `_id`, `jobTitle`, and `company`. Applications become eligible when the list also includes a nonempty `jobDescription` string or `hasJobDescription: true`. The API should use the saved job descriptions when generating suggestions.
 
-The current mobile branch's backend still needs the application list and job-description changes. Live generation also depends on the teammate's AI endpoint. This is a proposed request and response for coordinating the integration.
+Live generation depends on support for saved job descriptions and the teammate's AI endpoint. This is a proposed request and response for coordinating the integration.
 
 | Request | Proposed contract |
 | --- | --- |

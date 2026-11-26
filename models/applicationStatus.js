@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const company = require('./company');
 
 const applicationSchema = new mongoose.Schema(
     {
@@ -20,11 +19,27 @@ const applicationSchema = new mongoose.Schema(
             trim: true
         },
 
-        companyID: {
+        company: {
             type: String,
-            required: [true, 'companyID Required'],
+            required: [function () { return !this.companyID; }, 'company Required'],
             trim: true
         },
+
+        companyID: {
+            type: String,
+            trim: true
+        },
+
+        dateApplied: {
+            type: Date,
+            default: Date.now
+        },
+
+        notes: {
+            type: String,
+            default: '',
+            trim: true
+        }
     },
     {
         collection: 'application',
