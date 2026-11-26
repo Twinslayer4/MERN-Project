@@ -7,6 +7,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SecureStore from 'expo-secure-store';
 import { useFonts } from 'expo-font';
+import Feather from '@expo/vector-icons/Feather';
 import { DMSans_400Regular, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import { DMSerifDisplay_400Regular, DMSerifDisplay_400Regular_Italic } from '@expo-google-fonts/dm-serif-display';
 import { authenticate, getProfile, hasApi } from './api.mjs';
@@ -19,7 +20,11 @@ const SESSION_KEY = 'nextstep.mobile.session';
 const SAMPLE_USER = {
   firstName: 'Jamie', lastName: 'Demo', login: 'jamie.demo', email: 'jamie@example.com',
 };
-const WORKSPACE_TABS = [['profile', 'Profile'], ['resumes', 'Resumes'], ['suggestions', 'Suggestions']];
+const WORKSPACE_TABS = [
+  ['profile', 'Profile', 'user'],
+  ['resumes', 'Resumes', 'file-text'],
+  ['suggestions', 'Suggestions', 'star'],
+];
 
 function Button({ styles, title, onPress, secondary, disabled }) {
   return (
@@ -190,7 +195,7 @@ function AppHeader({ styles, dark, onToggleTheme, workspace }) {
 
 function WorkspacePanel({ styles, active, children }) {
   return (
-    <ScrollView style={!active && styles.hidden} accessibilityElementsHidden={!active}
+    <ScrollView style={active ? styles.workspacePanel : styles.hidden} accessibilityElementsHidden={!active}
       importantForAccessibility={active ? 'auto' : 'no-hide-descendants'} keyboardShouldPersistTaps="handled"
       contentContainerStyle={styles.content}>
       {children}
@@ -205,21 +210,6 @@ function Workspace({ styles, colors, session, demo, dark, onToggleTheme, ...prof
     <>
       <SafeAreaView edges={['top']} style={styles.workspaceChrome}>
         <AppHeader styles={styles} dark={dark} onToggleTheme={onToggleTheme} workspace />
-        <View style={[styles.content, styles.workspaceNav]}>
-          <View accessibilityRole="tablist" style={styles.workspaceTabs}>
-            {WORKSPACE_TABS.map(([id, label]) => {
-              const selected = tab === id;
-              return (
-                <Pressable key={id} accessibilityRole="tab" accessibilityState={{ selected }}
-                  onPress={() => setTab(id)} style={({ pressed }) => [
-                    styles.workspaceTab, pressed && styles.workspaceTabPressed, selected && styles.workspaceTabSelected,
-                  ]}>
-                  <Text style={[styles.workspaceTabLabel, selected && styles.workspaceHighlightText]}>{label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
       </SafeAreaView>
       <WorkspacePanel styles={styles} active={tab === 'profile'}>
         <Profile {...profileProps} styles={styles} demo={demo} user={demo ? SAMPLE_USER : session.user} />
@@ -231,6 +221,25 @@ function Workspace({ styles, colors, session, demo, dark, onToggleTheme, ...prof
         <SuggestionsScreen styles={styles} colors={colors} session={session} demo={demo} active={tab === 'suggestions'}
           onOpenResumes={() => setTab('resumes')} />
       </WorkspacePanel>
+      <SafeAreaView edges={['bottom']} style={styles.workspaceNav}>
+        <View accessibilityRole="tablist" accessibilityLabel="Workspace navigation" style={styles.workspaceTabs}>
+          {WORKSPACE_TABS.map(([id, label, icon]) => {
+            const selected = tab === id;
+            return (
+              <Pressable key={id} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }}
+                onPress={() => setTab(id)}
+                style={({ pressed }) => [styles.workspaceTab, pressed && styles.workspaceTabPressed]}>
+                <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
+                  style={[styles.workspaceTabIconFrame, selected && styles.workspaceTabSelected]}>
+                  <Feather name={icon} size={20} allowFontScaling={false}
+                    style={[styles.workspaceTabIcon, selected && styles.workspaceHighlightText]} />
+                </View>
+                <Text style={[styles.workspaceTabLabel, selected && styles.workspaceTabLabelSelected]}>{label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </SafeAreaView>
     </>
   );
 }
@@ -240,7 +249,9 @@ function Nextstep() {
   const [theme, setTheme] = useState(null);
   const dark = (theme || systemTheme) === 'dark';
   const colors = palette[dark ? 'dark' : 'light'];
-  const [fontsLoaded] = useFonts({ DMSans_400Regular, DMSans_600SemiBold, DMSerifDisplay_400Regular, DMSerifDisplay_400Regular_Italic });
+  const [fontsLoaded] = useFonts({
+    DMSans_400Regular, DMSans_600SemiBold, DMSerifDisplay_400Regular, DMSerifDisplay_400Regular_Italic, ...Feather.font,
+  });
   const styles = useMemo(() => makeStyles(colors, fontsLoaded), [colors, fontsLoaded]);
   const [mode, setMode] = useState('login');
   const [session, setSession] = useState(null);
@@ -325,7 +336,7 @@ function Nextstep() {
   const inWorkspace = Boolean(session || demo);
   const toggleTheme = () => setTheme(dark ? 'light' : 'dark');
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.safe}>
+    <SafeAreaView edges={inWorkspace ? ['left', 'right'] : ['bottom', 'left', 'right']} style={styles.safe}>
       <StatusBar style={dark || inWorkspace ? 'light' : 'dark'} />
       {restoring ? (
         <View style={styles.loading}><ActivityIndicator color={colors.accent} /><Text style={styles.bodyText}>Opening Nextstep…</Text></View>
