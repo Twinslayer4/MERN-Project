@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable,
-  ScrollView, Text, TextInput, View, useColorScheme,
+  ScrollView, Text, View, useColorScheme,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -11,6 +11,8 @@ import Feather from '@expo/vector-icons/Feather';
 import { DMSans_400Regular, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import { DMSerifDisplay_400Regular, DMSerifDisplay_400Regular_Italic } from '@expo-google-fonts/dm-serif-display';
 import { authenticate, getProfile, hasApi } from './api.mjs';
+import { Button, Field } from './FormControls';
+import { HomeScreen } from './HomeScreen';
 import { ResumeSection } from './ResumeSection';
 import { SuggestionsScreen } from './SuggestionsScreen';
 import { WorkspaceHeading } from './WorkspaceHeading';
@@ -21,20 +23,11 @@ const SAMPLE_USER = {
   firstName: 'Jamie', lastName: 'Demo', login: 'jamie.demo', email: 'jamie@example.com',
 };
 const WORKSPACE_TABS = [
-  ['profile', 'Profile', 'user'],
+  ['home', 'Home', 'home'],
   ['resumes', 'Resumes', 'file-text'],
   ['suggestions', 'Suggestions', 'star'],
+  ['profile', 'Profile', 'user'],
 ];
-
-function Button({ styles, title, onPress, secondary, disabled }) {
-  return (
-    <Pressable accessibilityRole="button" accessibilityState={{ disabled: Boolean(disabled) }}
-      disabled={disabled} onPress={onPress}
-      style={({ pressed }) => [styles.button, secondary && styles.outline, (pressed || disabled) && styles.busy]}>
-      <Text style={[styles.buttonLabel, secondary && styles.outlineLabel]}>{title}</Text>
-    </Pressable>
-  );
-}
 
 function Hero({ styles, label, title, accent, description }) {
   return (
@@ -47,28 +40,6 @@ function Hero({ styles, label, title, accent, description }) {
         {title}{'\n'}<Text style={styles.italic}>{accent}</Text>
       </Text>
       <Text style={styles.description}>{description}</Text>
-    </View>
-  );
-}
-
-function Field({ colors, styles, label, password, ...props }) {
-  const [focused, setFocused] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  return (
-    <View>
-      <Text style={styles.label}>{label}</Text>
-      <View style={password && styles.password}>
-        <TextInput {...props} accessibilityLabel={label} placeholderTextColor={colors.muted}
-          secureTextEntry={password && !showPassword}
-          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-          style={[styles.input, focused && styles.focused, password && styles.passwordInput]} />
-        {password && (
-          <Pressable accessibilityRole="button" accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
-            onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}>
-            <Text style={styles.link}>{showPassword ? 'Hide' : 'Show'}</Text>
-          </Pressable>
-        )}
-      </View>
     </View>
   );
 }
@@ -135,21 +106,19 @@ function AuthScreen({ mode, changeMode, colors, styles, onSession, onPreview, in
       </View>
       {!hasApi && (
         <View style={styles.preview}>
-          <Button secondary styles={styles} title="Preview sample profile  ↗" onPress={onPreview} />
-          <Text style={styles.footer}>The sample profile is available while the account service is offline.</Text>
+          <Button secondary styles={styles} title="Preview sample workspace" onPress={onPreview} />
         </View>
       )}
     </>
   );
 }
 
-function Profile({ styles, user, demo, created, notice, busy, onRefresh, onSignOut }) {
+function Profile({ styles, user, demo, notice, busy, onRefresh, onSignOut }) {
   const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.login || 'Nextstep member';
   const initials = displayName.split(/\s+/).slice(0, 2).map(part => part[0]?.toUpperCase()).join('');
   return (
     <View style={styles.workspacePage}>
       <WorkspaceHeading styles={styles} title="Profile" description={demo ? 'You’re viewing a sample account.' : undefined} />
-      {created && <Text accessibilityLiveRegion="polite" style={styles.link}>Your account is ready.</Text>}
       <View style={styles.card}>
         <View style={styles.profileHead}>
           <View style={styles.avatar}><Text style={styles.initials}>{initials}</Text></View>
@@ -203,16 +172,18 @@ function WorkspacePanel({ styles, active, children }) {
   );
 }
 
-function Workspace({ styles, colors, session, demo, dark, onToggleTheme, ...profileProps }) {
-  const [tab, setTab] = useState('profile');
+function Workspace({ styles, colors, session, demo, created, dark, onToggleTheme, ...profileProps }) {
+  const [tab, setTab] = useState('home');
+  const user = demo ? SAMPLE_USER : session.user;
 
   return (
     <>
       <SafeAreaView edges={['top']} style={styles.workspaceChrome}>
         <AppHeader styles={styles} dark={dark} onToggleTheme={onToggleTheme} workspace />
       </SafeAreaView>
-      <WorkspacePanel styles={styles} active={tab === 'profile'}>
-        <Profile {...profileProps} styles={styles} demo={demo} user={demo ? SAMPLE_USER : session.user} />
+      <WorkspacePanel styles={styles} active={tab === 'home'}>
+        <HomeScreen styles={styles} colors={colors} firstName={user.firstName} session={session}
+          demo={demo} created={created} dark={dark} active={tab === 'home'} />
       </WorkspacePanel>
       <WorkspacePanel styles={styles} active={tab === 'resumes'}>
         <ResumeSection styles={styles} colors={colors} session={session} demo={demo} disabled={profileProps.busy} />
@@ -220,6 +191,9 @@ function Workspace({ styles, colors, session, demo, dark, onToggleTheme, ...prof
       <WorkspacePanel styles={styles} active={tab === 'suggestions'}>
         <SuggestionsScreen styles={styles} colors={colors} session={session} demo={demo} active={tab === 'suggestions'}
           onOpenResumes={() => setTab('resumes')} />
+      </WorkspacePanel>
+      <WorkspacePanel styles={styles} active={tab === 'profile'}>
+        <Profile {...profileProps} styles={styles} demo={demo} user={user} />
       </WorkspacePanel>
       <SafeAreaView edges={['bottom']} style={styles.workspaceNav}>
         <View accessibilityRole="tablist" accessibilityLabel="Workspace navigation" style={styles.workspaceTabs}>

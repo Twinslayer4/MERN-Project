@@ -1,9 +1,9 @@
 export const exampleResume = { _id: 'sample-resume', name: 'Jamie Rivera – Resume.pdf' };
 
 export const exampleApplications = [
-  { _id: 'sample-frontend', jobTitle: 'Frontend Intern', company: 'Fieldwork Studio', hasJobDescription: true },
-  { _id: 'sample-data', jobTitle: 'Data Analyst Intern', company: 'Commonline', hasJobDescription: true },
-  { _id: 'sample-product', jobTitle: 'Product Intern', company: 'Evergreen Labs', hasJobDescription: false },
+  { _id: 'sample-frontend', jobTitle: 'Frontend Intern', company: 'Fieldwork Studio', status: 'interviewing', hasJobDescription: true },
+  { _id: 'sample-data', jobTitle: 'Data Analyst Intern', company: 'Commonline', status: 'offer', hasJobDescription: true },
+  { _id: 'sample-product', jobTitle: 'Product Intern', company: 'Evergreen Labs', status: 'applied', hasJobDescription: false },
 ];
 
 const exampleSuggestions = {

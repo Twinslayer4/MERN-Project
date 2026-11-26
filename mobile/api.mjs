@@ -86,23 +86,36 @@ export function deleteResume(userId, token, resumeId) {
   return request(`${resumesPath(userId)}/${encodeURIComponent(resumeId)}`, { token, method: 'DELETE' });
 }
 
+function applicationsPath(userId) {
+  return `/api/users/${encodeURIComponent(userId)}/applications`;
+}
+
+function normalizeApplication(application) {
+  const jobDescription = typeof application.jobDescription === 'string' ? application.jobDescription.trim() : '';
+  return {
+    _id: application._id,
+    jobTitle: typeof application.jobTitle === 'string' && application.jobTitle.trim()
+      ? application.jobTitle.trim()
+      : 'Untitled application',
+    company: typeof application.company === 'string' ? application.company : '',
+    status: typeof application.status === 'string' ? application.status.trim().toLowerCase() : '',
+    hasJobDescription: Boolean(jobDescription) || application.hasJobDescription === true,
+  };
+}
+
 export async function listApplications(userId, token) {
-  const applications = await request(`/api/users/${encodeURIComponent(userId)}/applications`, { token });
+  const applications = await request(applicationsPath(userId), { token });
   if (!Array.isArray(applications) || applications.some(application => typeof application?._id !== 'string')) {
     throw new ApiError('The server did not return your saved applications.');
   }
 
-  return applications.map(application => {
-    const jobDescription = typeof application.jobDescription === 'string' ? application.jobDescription.trim() : '';
-    return {
-      _id: application._id,
-      jobTitle: typeof application.jobTitle === 'string' && application.jobTitle.trim()
-        ? application.jobTitle.trim()
-        : 'Untitled application',
-      company: typeof application.company === 'string' ? application.company : '',
-      hasJobDescription: Boolean(jobDescription) || application.hasJobDescription === true,
-    };
-  });
+  return applications.map(normalizeApplication);
+}
+
+export async function createApplication(userId, token, body) {
+  const application = await request(applicationsPath(userId), { token, body });
+  if (typeof application._id !== 'string') throw new ApiError('The server did not confirm the application.');
+  return normalizeApplication(application);
 }
 
 export async function generateSuggestions(userId, token, resumeId, applicationIds) {
