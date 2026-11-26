@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable,
-  ScrollView, Text, View, useColorScheme,
+  RefreshControl, ScrollView, Text, View, useColorScheme, useWindowDimensions,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -12,11 +12,13 @@ import { DMSans_400Regular, DMSans_600SemiBold } from '@expo-google-fonts/dm-san
 import { DMSerifDisplay_400Regular, DMSerifDisplay_400Regular_Italic } from '@expo-google-fonts/dm-serif-display';
 import { authenticate, getProfile, hasApi } from './api.mjs';
 import { Button, Field } from './FormControls';
+import { CalendarScreen } from './CalendarScreen';
 import { HomeScreen } from './HomeScreen';
 import { ResumeSection } from './ResumeSection';
 import { SuggestionsScreen } from './SuggestionsScreen';
 import { WorkspaceHeading } from './WorkspaceHeading';
 import { makeStyles, palette } from './theme';
+import { useInterviews } from './useInterviews';
 
 const SESSION_KEY = 'nextstep.mobile.session';
 const SAMPLE_USER = {
@@ -24,6 +26,7 @@ const SAMPLE_USER = {
 };
 const WORKSPACE_TABS = [
   ['home', 'Home', 'home'],
+  ['calendar', 'Calendar', 'calendar'],
   ['resumes', 'Resumes', 'file-text'],
   ['suggestions', 'Suggestions', 'star'],
   ['profile', 'Profile', 'user'],
@@ -162,11 +165,11 @@ function AppHeader({ styles, dark, onToggleTheme, workspace }) {
   );
 }
 
-function WorkspacePanel({ styles, active, children }) {
+function WorkspacePanel({ styles, active, children, contentStyle, refreshControl }) {
   return (
     <ScrollView style={active ? styles.workspacePanel : styles.hidden} accessibilityElementsHidden={!active}
       importantForAccessibility={active ? 'auto' : 'no-hide-descendants'} keyboardShouldPersistTaps="handled"
-      contentContainerStyle={styles.content}>
+      contentContainerStyle={[styles.content, contentStyle]} refreshControl={refreshControl}>
       {children}
     </ScrollView>
   );
@@ -174,6 +177,8 @@ function WorkspacePanel({ styles, active, children }) {
 
 function Workspace({ styles, colors, session, demo, created, dark, onToggleTheme, ...profileProps }) {
   const [tab, setTab] = useState('home');
+  const { width } = useWindowDimensions();
+  const calendar = useInterviews(session, demo);
   const user = demo ? SAMPLE_USER : session.user;
 
   return (
@@ -183,7 +188,15 @@ function Workspace({ styles, colors, session, demo, created, dark, onToggleTheme
       </SafeAreaView>
       <WorkspacePanel styles={styles} active={tab === 'home'}>
         <HomeScreen styles={styles} colors={colors} firstName={user.firstName} session={session}
-          demo={demo} created={created} dark={dark} active={tab === 'home'} />
+          demo={demo} created={created} dark={dark} active={tab === 'home'}
+          calendar={calendar} onOpenCalendar={() => setTab('calendar')} />
+      </WorkspacePanel>
+      <WorkspacePanel styles={styles} active={tab === 'calendar'} contentStyle={styles.calendarContent}
+        refreshControl={demo ? undefined : (
+          <RefreshControl refreshing={calendar.loading && calendar.interviews !== null}
+            onRefresh={calendar.refresh} tintColor={colors.accent} colors={[colors.accent]} />
+        )}>
+        <CalendarScreen styles={styles} colors={colors} dark={dark} demo={demo} calendar={calendar} />
       </WorkspacePanel>
       <WorkspacePanel styles={styles} active={tab === 'resumes'}>
         <ResumeSection styles={styles} colors={colors} session={session} demo={demo} disabled={profileProps.busy} />
@@ -196,7 +209,8 @@ function Workspace({ styles, colors, session, demo, created, dark, onToggleTheme
         <Profile {...profileProps} styles={styles} demo={demo} user={user} />
       </WorkspacePanel>
       <SafeAreaView edges={['bottom']} style={styles.workspaceNav}>
-        <View accessibilityRole="tablist" accessibilityLabel="Workspace navigation" style={styles.workspaceTabs}>
+        <View accessibilityRole="tablist" accessibilityLabel="Workspace navigation"
+          style={[styles.workspaceTabs, width <= 360 && styles.compactWorkspaceTabs]}>
           {WORKSPACE_TABS.map(([id, label, icon]) => {
             const selected = tab === id;
             return (
@@ -208,7 +222,9 @@ function Workspace({ styles, colors, session, demo, created, dark, onToggleTheme
                   <Feather name={icon} size={20} allowFontScaling={false}
                     style={[styles.workspaceTabIcon, selected && styles.workspaceHighlightText]} />
                 </View>
-                <Text style={[styles.workspaceTabLabel, selected && styles.workspaceTabLabelSelected]}>{label}</Text>
+                <Text numberOfLines={1} adjustsFontSizeToFit
+                  style={[styles.workspaceTabLabel, width <= 360 && styles.compactWorkspaceTabLabel,
+                    selected && styles.workspaceTabLabelSelected]}>{label}</Text>
               </Pressable>
             );
           })}

@@ -1,6 +1,6 @@
 # Nextstep mobile
 
-Expo app for iOS and Android with sign-in, account creation, and a light and dark workspace. The bottom tabs are Home, Resumes, Suggestions, and Profile.
+Expo app for iOS and Android with sign-in, account creation, and a light and dark workspace. The bottom tabs are Home, Calendar, Resumes, Suggestions, and Profile.
 
 ## Open on your phone
 
@@ -14,7 +14,7 @@ npm start
 
 Connect the phone and computer to the same Wi-Fi. Scan the Metro QR with your iPhone camera or with **Scan QR code** inside Expo Go on Android. On physical iOS, Expo may require the same Expo account in Expo Go and `npx expo login` on the computer. Keep the terminal running while previewing. See [Expo's device setup guide](https://docs.expo.dev/get-started/set-up-your-environment/).
 
-When the API is unconfigured, **Preview sample workspace** opens Home with example applications. Applications added in this preview are cleared when you leave it. The theme button switches between the two palettes.
+When the API is unconfigured, **Preview sample workspace** opens Home with example applications and interviews. Changes in this preview are cleared when you leave it. The theme button switches between the two palettes.
 
 ## Connect the account screens
 
@@ -24,6 +24,11 @@ Start the MERN API and MongoDB using the repository's backend setup. Copy `.env.
 - Create an account uses `POST /api/users` and opens Home on success.
 - Profile refresh and session restore use `GET /api/users/:userId` with the bearer token.
 - Home lists and creates applications with `GET` and `POST /api/users/:userId/applications` using the signed-in user's bearer token. Run the API from this checkout for local testing.
+- Calendar lists and schedules interviews with `GET` and `POST /api/users/:userId/interviews`. Editing and removal use `PUT` and `DELETE /api/users/:userId/interviews/:interviewId`.
+
+## Schedule an interview
+
+Open **Calendar**, select a day, and tap **Schedule interview**. Dots mark days with interviews. Tap an interview in the day’s agenda to edit or remove it. The same upcoming interviews appear on **Home**. Interviews are saved to your Nextstep account and displayed in your device’s time zone.
 
 The device saves the token and user ID in Expo SecureStore. Sign-out clears the saved session. Passwords are sent to the configured API during authentication and are never saved by the mobile app. Use test credentials on a local HTTP development network.
 

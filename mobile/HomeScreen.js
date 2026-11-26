@@ -5,6 +5,8 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { createApplication, listApplications } from './api.mjs';
+import { upcomingInterviews } from './calendar.mjs';
+import { InterviewRow } from './CalendarScreen';
 import { Button, Field } from './FormControls';
 import { exampleApplications } from './suggestionExamples';
 import { WorkspaceHeading } from './WorkspaceHeading';
@@ -156,7 +158,7 @@ function NextSteps({ styles, applications }) {
   );
 }
 
-export function HomeScreen({ styles, colors, firstName, session, demo, created, dark, active }) {
+export function HomeScreen({ styles, colors, firstName, session, demo, created, dark, active, calendar, onOpenCalendar }) {
   const userId = session?.user._id;
   const token = session?.token;
   const [applications, setApplications] = useState(demo ? exampleApplications : null);
@@ -194,6 +196,7 @@ export function HomeScreen({ styles, colors, firstName, session, demo, created, 
   const offers = applications?.filter(({ status }) => status === 'offer').length;
   const applied = applications?.filter(({ status }) => status === 'applied').length;
   const activeApplications = applications?.filter(({ status }) => status !== 'rejected');
+  const upcoming = upcomingInterviews(calendar.interviews ?? []).slice(0, 3);
 
   return (
     <View style={styles.workspacePage}>
@@ -234,7 +237,14 @@ export function HomeScreen({ styles, colors, firstName, session, demo, created, 
       )}
       <View style={styles.card}>
         <Text accessibilityRole="header" style={styles.sectionTitle}>Upcoming interviews</Text>
-        <Text style={styles.bodyText}>Scheduled interviews will appear here when calendar support is connected.</Text>
+        {upcoming.length ? upcoming.map(interview => (
+          <InterviewRow key={interview._id} interview={interview} styles={styles} showDate />
+        )) : (
+          <Text style={styles.bodyText}>
+            {calendar.error ? 'Could not load interviews.' : calendar.loading ? 'Loading interviews…' : 'No upcoming interviews.'}
+          </Text>
+        )}
+        <Button styles={styles} title="View calendar" onPress={onOpenCalendar} secondary />
       </View>
       {adding && <AddApplicationForm styles={styles} colors={colors} dark={dark}
         onClose={() => setAdding(false)} onSave={saveApplication} />}

@@ -118,6 +118,37 @@ export async function createApplication(userId, token, body) {
   return normalizeApplication(application);
 }
 
+function interviewsPath(userId, interviewId) {
+  const path = `/api/users/${encodeURIComponent(userId)}/interviews`;
+  return interviewId ? `${path}/${encodeURIComponent(interviewId)}` : path;
+}
+
+function isInterview(value) {
+  return typeof value?._id === 'string'
+    && ['company', 'role', 'type', 'startsAt'].every(key => typeof value[key] === 'string')
+    && Number.isFinite(Date.parse(value.startsAt));
+}
+
+export async function listInterviews(userId, token) {
+  const interviews = await request(interviewsPath(userId), { token });
+  if (!Array.isArray(interviews) || !interviews.every(isInterview)) {
+    throw new ApiError('The server did not return your interviews.');
+  }
+  return interviews;
+}
+
+export async function saveInterview(userId, token, body, interviewId) {
+  const interview = await request(interviewsPath(userId, interviewId), {
+    token, body, method: interviewId ? 'PUT' : 'POST',
+  });
+  if (!isInterview(interview)) throw new ApiError('The server did not confirm the interview.');
+  return interview;
+}
+
+export function deleteInterview(userId, token, interviewId) {
+  return request(interviewsPath(userId, interviewId), { token, method: 'DELETE' });
+}
+
 export async function generateSuggestions(userId, token, resumeId, applicationIds) {
   if (!hasSuggestionsApi) throw new ApiError('Live suggestions are unavailable.');
 
