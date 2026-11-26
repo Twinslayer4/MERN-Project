@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Modal, Pressable, Text, View } from 'react
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { generateSuggestions, hasSuggestionsApi, listApplications, listResumes } from './api.mjs';
 import { exampleApplications, exampleResume, getExampleSuggestions } from './suggestionExamples';
+import { WorkspaceHeading } from './WorkspaceHeading';
 
 function Selector({ styles, label, title, detail, disabled, onPress }) {
   return (
@@ -31,7 +32,7 @@ function Picker({ styles, mode, items, selectedResume, selectedApplications, onS
     <Modal visible animationType="slide" onRequestClose={onClose}>
       <SafeAreaProvider style={styles.safe}>
         <SafeAreaView accessibilityViewIsModal style={styles.suggestionSheet}>
-          <Text accessibilityRole="header" style={styles.formTitle}>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
             {choosingResume ? 'Choose a resume' : 'Choose applications'}
           </Text>
           {!choosingResume && (
@@ -85,7 +86,7 @@ function Results({ styles, suggestions, applications }) {
   return (
     <View style={styles.suggestionResults}>
       <View style={styles.suggestionIntro} accessibilityLiveRegion="polite">
-        <Text accessibilityRole="header" style={styles.formTitle}>Your suggestions</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>Your suggestions</Text>
         <Text style={styles.bodyText}>
           {count === 1 ? `Based on the ${applications[0].jobTitle} application` : `Based on ${count} applications`}
         </Text>
@@ -126,7 +127,7 @@ function loadError(result, fallback, unavailable) {
   return fallback;
 }
 
-function SuggestionWorkspace({ styles, colors, session, active, preview, onOpenProfile, onPreview }) {
+function SuggestionWorkspace({ styles, colors, session, active, preview, onOpenResumes, onPreview }) {
   const userId = session?.user._id;
   const token = session?.token;
   const [sources, setSources] = useState(null);
@@ -227,8 +228,8 @@ function SuggestionWorkspace({ styles, colors, session, active, preview, onOpenP
           onPress={() => setPicker('resume')} />
         {resumeError && !loading && <Text accessibilityRole="alert" style={styles.error}>{resumeError}</Text>}
         {!preview && !loading && !resumeError && !resumes.length && (
-          <Pressable accessibilityRole="button" onPress={onOpenProfile} style={styles.suggestionLinkButton}>
-            <Text style={styles.link}>Upload a resume in Profile</Text>
+          <Pressable accessibilityRole="button" onPress={onOpenResumes} style={styles.suggestionLinkButton}>
+            <Text style={styles.link}>Upload a resume</Text>
           </Pressable>
         )}
         <Selector styles={styles} label="Target applications"
@@ -266,15 +267,13 @@ function SuggestionWorkspace({ styles, colors, session, active, preview, onOpenP
   );
 }
 
-export function SuggestionsScreen({ styles, colors, session, demo, active, onOpenProfile }) {
+export function SuggestionsScreen({ styles, colors, session, demo, active, onOpenResumes }) {
   const [preview, setPreview] = useState(demo);
 
   return (
-    <View style={styles.suggestionScreen}>
-      <View style={styles.suggestionHero}>
-        <Text accessibilityRole="header" style={styles.suggestionHeadline}>Stand out</Text>
-        <Text style={styles.description}>Get project ideas and practical next steps based on your resume and the roles you choose.</Text>
-      </View>
+    <View style={styles.workspacePage}>
+      <WorkspaceHeading styles={styles} title="Suggestions"
+        description="Get project ideas and practical next steps based on your resume and the roles you choose." />
       {preview && (
         <View style={styles.suggestionNotice}>
           <Text style={styles.suggestionChoiceTitle}>Sample preview</Text>
@@ -287,7 +286,7 @@ export function SuggestionsScreen({ styles, colors, session, demo, active, onOpe
         </View>
       )}
       <SuggestionWorkspace key={preview ? 'sample' : 'account'} styles={styles} colors={colors} session={session}
-        active={active} preview={preview} onOpenProfile={onOpenProfile} onPreview={() => setPreview(true)} />
+        active={active} preview={preview} onOpenResumes={onOpenResumes} onPreview={() => setPreview(true)} />
     </View>
   );
 }

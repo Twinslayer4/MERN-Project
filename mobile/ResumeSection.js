@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import { ApiError, deleteResume, listResumes, uploadResume } from './api.mjs';
+import { WorkspaceHeading } from './WorkspaceHeading';
 
 const PDF_TYPE = 'application/pdf';
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -105,38 +106,44 @@ export function ResumeSection({ styles, colors, session, demo, disabled }) {
     ]);
   }
 
-  const uploadLabel = action === 'uploading' ? 'Uploading…' : action === 'choosing' ? 'Choosing file…' : 'Upload a PDF';
+  const uploadLabel = action === 'uploading' ? 'Uploading…' : action === 'choosing' ? 'Choosing file…'
+    : resumes?.length ? 'Upload a PDF' : 'Upload your first resume';
+  const uploadButton = (
+    <Pressable accessibilityRole="button" accessibilityState={{ disabled: unavailable, busy: action === 'uploading' }}
+      disabled={unavailable} onPress={chooseResume}
+      style={({ pressed }) => [styles.button, (pressed || unavailable) && styles.busy]}>
+      <Text style={styles.buttonLabel}>{uploadLabel}</Text>
+    </Pressable>
+  );
 
   return (
-    <View style={styles.card}>
-      <View style={styles.resumeHeading}>
-        <Text accessibilityRole="header" style={styles.formTitle}>Resumes</Text>
-        <Text style={styles.bodyText}>PDF files · Up to 5 MB each</Text>
-      </View>
-      <Pressable accessibilityRole="button" accessibilityState={{ disabled: unavailable, busy: action === 'uploading' }}
-        disabled={unavailable} onPress={chooseResume}
-        style={({ pressed }) => [styles.button, (pressed || unavailable) && styles.busy]}>
-        <Text style={styles.buttonLabel}>{uploadLabel}</Text>
-      </Pressable>
-      {demo ? (
-        <Text style={styles.bodyText}>Connect to the Nextstep API and sign in to upload a resume.</Text>
-      ) : loadError ? (
-        <View style={styles.resumeState}>
+    <View style={styles.workspacePage}>
+      <WorkspaceHeading styles={styles} title="Resumes" description="PDF files up to 5 MB each." />
+      {resumes !== null && (
+        <View style={styles.resumeSummary}>
+          <Text style={styles.bodyText}>Total resumes</Text>
+          <Text style={styles.resumeCount}>{resumes.length}</Text>
+        </View>
+      )}
+      <Text accessibilityRole="header" style={styles.sectionTitle}>Resume library</Text>
+      {loadError ? (
+        <View style={[styles.card, styles.resumeState]}>
           <Text accessibilityRole="alert" style={styles.error}>{loadError}</Text>
           <Pressable accessibilityRole="button" disabled={disabled} style={styles.resumeAction}
             onPress={() => { setLoadError(''); setAttempt(current => current + 1); }}>
             <Text style={styles.link}>Retry loading</Text>
           </Pressable>
         </View>
-      ) : resumes === null ? (
-        <View accessibilityLiveRegion="polite" style={styles.resumeLoading}>
+      ) : resumes === null && !demo ? (
+        <View accessibilityLiveRegion="polite" style={[styles.card, styles.resumeLoading]}>
           <ActivityIndicator size="small" color={colors.accent} />
           <Text style={styles.bodyText}>Loading resumes…</Text>
         </View>
-      ) : resumes.length ? (
-        <View>
+      ) : resumes?.length ? (
+        <View style={styles.resumeLibrary}>
+          {uploadButton}
           {resumes.map(resume => (
-            <View key={resume._id} style={styles.resumeRow}>
+            <View key={resume._id} style={[styles.card, styles.resumeRow]}>
               <View accessible={false} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden
                 style={styles.resumeType}><Text style={styles.resumeTypeLabel}>PDF</Text></View>
               <View style={styles.column}>
@@ -146,13 +153,22 @@ export function ResumeSection({ styles, colors, session, demo, disabled }) {
               <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${resume.name}`}
                 accessibilityState={{ disabled: unavailable }} disabled={unavailable}
                 onPress={() => confirmRemove(resume)} style={styles.resumeAction}>
-                <Text style={[styles.link, unavailable && styles.busy]}>{action === resume._id ? 'Removing…' : 'Remove'}</Text>
+                <Text style={[styles.link, styles.error, unavailable && styles.busy]}>
+                  {action === resume._id ? 'Removing…' : 'Remove'}
+                </Text>
               </Pressable>
             </View>
           ))}
         </View>
       ) : (
-        <Text style={styles.bodyText}>No resumes uploaded yet.</Text>
+        <View style={[styles.card, styles.resumeEmpty]}>
+          <Text style={styles.resumeName}>{demo ? 'Your resume library' : 'No resumes uploaded yet'}</Text>
+          {demo ? (
+            <Text style={[styles.bodyText, styles.resumeEmptyText]}>
+              Sign in with a connected Nextstep account to upload and manage resumes.
+            </Text>
+          ) : uploadButton}
+        </View>
       )}
       {!!message && <Text accessibilityLiveRegion="polite" style={styles.link}>{message}</Text>}
       {!!error && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{error}</Text>}

@@ -1,6 +1,6 @@
 # Nextstep mobile
 
-Expo app for iOS and Android using the Nextstep sage palette, serif headlines, and charcoal dark mode. The app includes sign-in, account creation, a profile with resume uploads, and a Suggestions tab.
+Expo app for iOS and Android with sign-in, account creation, and a light and dark workspace. The workspace has Profile, Resumes, and Suggestions tabs.
 
 ## Open on your phone
 
@@ -40,7 +40,7 @@ Restart Metro with `npm start` and reopen Expo Go. Check `http://192.168.1.42:80
 
 ## Upload a resume
 
-After signing in, tap **Upload a PDF** in **Resumes** and choose a file from the device picker. Each PDF can be up to 5 MB. Saved resumes appear in the account's list after upload and are available after signing in again. **Remove** deletes the file from the account after confirmation. Use a sample PDF when testing over local HTTP.
+After signing in, open the **Resumes** tab and choose **Upload your first resume** or **Upload a PDF**. Each PDF can be up to 5 MB. Saved resumes appear in the account's list after upload and are available after signing in again. **Remove** deletes the file from the account after confirmation. Use a sample PDF when testing over local HTTP.
 
 ### Resume API
 

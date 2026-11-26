@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable,
-  ScrollView, StyleSheet, Text, TextInput, View, useColorScheme,
+  ScrollView, Text, TextInput, View, useColorScheme,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -12,21 +12,14 @@ import { DMSerifDisplay_400Regular, DMSerifDisplay_400Regular_Italic } from '@ex
 import { authenticate, getProfile, hasApi } from './api.mjs';
 import { ResumeSection } from './ResumeSection';
 import { SuggestionsScreen } from './SuggestionsScreen';
+import { WorkspaceHeading } from './WorkspaceHeading';
 import { makeStyles, palette } from './theme';
 
 const SESSION_KEY = 'nextstep.mobile.session';
 const SAMPLE_USER = {
   firstName: 'Jamie', lastName: 'Demo', login: 'jamie.demo', email: 'jamie@example.com',
 };
-const WORKSPACE_TABS = [['profile', 'Profile'], ['suggestions', 'Suggestions']];
-const navigation = StyleSheet.create({
-  header: { paddingBottom: 0 },
-  frame: { paddingTop: 2, paddingBottom: 10 },
-  tabs: { flexDirection: 'row', gap: 4, padding: 4, borderRadius: 13, borderWidth: 1 },
-  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: 6, borderRadius: 9, borderWidth: 1 },
-  tabLabel: { textAlign: 'center' },
-  hidden: { display: 'none' },
-});
+const WORKSPACE_TABS = [['profile', 'Profile'], ['resumes', 'Resumes'], ['suggestions', 'Suggestions']];
 
 function Button({ styles, title, onPress, secondary, disabled }) {
   return (
@@ -145,79 +138,99 @@ function AuthScreen({ mode, changeMode, colors, styles, onSession, onPreview, in
   );
 }
 
-function Profile({ styles, colors, user, session, demo, created, notice, busy, onRefresh, onSignOut }) {
+function Profile({ styles, user, demo, created, notice, busy, onRefresh, onSignOut }) {
   const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.login || 'Nextstep member';
   const initials = displayName.split(/\s+/).slice(0, 2).map(part => part[0]?.toUpperCase()).join('');
   return (
-    <>
-      <Hero styles={styles} label={demo ? 'SAMPLE PROFILE' : 'YOUR WORKSPACE'}
-        title={created ? 'Account created.' : 'Keep moving'} accent={created ? 'Welcome aboard.' : 'forward.'}
-        description="Your Nextstep account, all in one place." />
-      <View style={styles.profile}>
-        <ResumeSection key={user._id || 'demo'} styles={styles} colors={colors}
-          session={session} demo={demo} disabled={busy} />
-        <View style={styles.card}>
-          <View style={styles.profileHead}>
-            <View style={styles.avatar}><Text style={styles.initials}>{initials}</Text></View>
-            <View style={styles.column}>
-              <Text accessibilityRole="header" style={styles.formTitle}>{displayName}</Text>
-              <Text style={styles.bodyText}>{demo ? 'Preview account' : 'Personal profile'}</Text>
-            </View>
+    <View style={styles.workspacePage}>
+      <WorkspaceHeading styles={styles} title="Profile" description={demo ? 'You’re viewing a sample account.' : undefined} />
+      {created && <Text accessibilityLiveRegion="polite" style={styles.link}>Your account is ready.</Text>}
+      <View style={styles.card}>
+        <View style={styles.profileHead}>
+          <View style={styles.avatar}><Text style={styles.initials}>{initials}</Text></View>
+          <View style={styles.column}>
+            <Text accessibilityRole="header" style={styles.sectionTitle}>{displayName}</Text>
           </View>
-          {[[ 'Username', user.login ], [ 'Email', user.email ]].map(([label, value]) => (
-            <View key={label} style={styles.detail}>
-              <Text style={styles.label}>{label}</Text>
-              <Text style={styles.value}>{value || '—'}</Text>
-            </View>
-          ))}
         </View>
-        {!!notice && <Text accessibilityLiveRegion="polite" style={styles.bodyText}>{notice}</Text>}
-        <View style={styles.note}>
-          <Text style={styles.link}>✳  A little progress, every day.</Text>
-          <Text style={styles.bodyText}>{demo ? 'You’re viewing sample account information.' : 'One opportunity at a time.'}</Text>
-        </View>
-        {!demo && <Button secondary styles={styles} disabled={busy} title="Refresh profile" onPress={onRefresh} />}
-        <Button secondary styles={styles} disabled={busy} title={demo ? 'Back to sign in' : 'Sign out'} onPress={onSignOut} />
+        {[[ 'Username', user.login ], [ 'Email', user.email ]].map(([label, value]) => (
+          <View key={label} style={styles.detail}>
+            <Text style={styles.label}>{label}</Text>
+            <Text style={styles.value}>{value || '—'}</Text>
+          </View>
+        ))}
       </View>
-    </>
+      {!!notice && <Text accessibilityLiveRegion="polite" style={styles.bodyText}>{notice}</Text>}
+      {!demo && <Button secondary styles={styles} disabled={busy} title="Refresh profile" onPress={onRefresh} />}
+      <Button secondary styles={styles} disabled={busy} title={demo ? 'Back to sign in' : 'Sign out'} onPress={onSignOut} />
+    </View>
   );
 }
 
-function Workspace({ styles, colors, session, demo, ...profileProps }) {
+function AppHeader({ styles, dark, onToggleTheme, workspace }) {
+  return (
+    <View style={[styles.content, styles.headerContent]}>
+      <View style={styles.header}>
+        <View style={styles.brand}>
+          <View style={[styles.mark, workspace && styles.workspaceMark]}>
+            <Text style={[styles.markText, workspace && styles.workspaceHighlightText]}>n↗</Text>
+          </View>
+          <View style={styles.brandName}>
+            <Text style={[styles.wordmark, workspace && styles.workspaceWordmark]}>nextstep</Text>
+            {workspace && <Text style={styles.workspaceSubtitle}>Career workspace</Text>}
+          </View>
+        </View>
+        <Pressable accessibilityRole="button" accessibilityLabel={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+          style={[styles.themeButton, workspace && styles.workspaceThemeButton]} onPress={onToggleTheme}>
+          <Text style={[styles.themeIcon, workspace && styles.workspaceWordmark]}>{dark ? '☀' : '☾'}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function WorkspacePanel({ styles, active, children }) {
+  return (
+    <ScrollView style={!active && styles.hidden} accessibilityElementsHidden={!active}
+      importantForAccessibility={active ? 'auto' : 'no-hide-descendants'} keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.content}>
+      {children}
+    </ScrollView>
+  );
+}
+
+function Workspace({ styles, colors, session, demo, dark, onToggleTheme, ...profileProps }) {
   const [tab, setTab] = useState('profile');
-  const profileActive = tab === 'profile';
 
   return (
     <>
-      <View style={[styles.content, navigation.frame]}>
-        <View accessibilityRole="tablist" style={[navigation.tabs, { backgroundColor: colors.tint, borderColor: colors.line }]}>
-          {WORKSPACE_TABS.map(([id, label]) => {
-            const selected = tab === id;
-            return (
-              <Pressable key={id} accessibilityRole="tab" accessibilityState={{ selected }}
-                onPress={() => setTab(id)} style={({ pressed }) => [
-                  navigation.tab,
-                  { backgroundColor: selected || pressed ? colors.panel : 'transparent',
-                    borderColor: selected ? colors.line : 'transparent' },
-                ]}>
-                <Text style={[styles.link, navigation.tabLabel, { color: selected ? colors.ink : colors.muted }]}>{label}</Text>
-              </Pressable>
-            );
-          })}
+      <SafeAreaView edges={['top']} style={styles.workspaceChrome}>
+        <AppHeader styles={styles} dark={dark} onToggleTheme={onToggleTheme} workspace />
+        <View style={[styles.content, styles.workspaceNav]}>
+          <View accessibilityRole="tablist" style={styles.workspaceTabs}>
+            {WORKSPACE_TABS.map(([id, label]) => {
+              const selected = tab === id;
+              return (
+                <Pressable key={id} accessibilityRole="tab" accessibilityState={{ selected }}
+                  onPress={() => setTab(id)} style={({ pressed }) => [
+                    styles.workspaceTab, pressed && styles.workspaceTabPressed, selected && styles.workspaceTabSelected,
+                  ]}>
+                  <Text style={[styles.workspaceTabLabel, selected && styles.workspaceHighlightText]}>{label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
-      </View>
-      <ScrollView style={!profileActive && navigation.hidden} accessibilityElementsHidden={!profileActive}
-        importantForAccessibility={profileActive ? 'auto' : 'no-hide-descendants'} keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.content}>
-        <Profile {...profileProps} styles={styles} colors={colors} session={session} demo={demo}
-          user={demo ? SAMPLE_USER : session.user} />
-      </ScrollView>
-      <ScrollView style={profileActive && navigation.hidden} accessibilityElementsHidden={profileActive}
-        importantForAccessibility={profileActive ? 'no-hide-descendants' : 'auto'} keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.content}>
-        <SuggestionsScreen styles={styles} colors={colors} session={session} demo={demo} active={!profileActive}
-          onOpenProfile={() => setTab('profile')} />
-      </ScrollView>
+      </SafeAreaView>
+      <WorkspacePanel styles={styles} active={tab === 'profile'}>
+        <Profile {...profileProps} styles={styles} demo={demo} user={demo ? SAMPLE_USER : session.user} />
+      </WorkspacePanel>
+      <WorkspacePanel styles={styles} active={tab === 'resumes'}>
+        <ResumeSection styles={styles} colors={colors} session={session} demo={demo} disabled={profileProps.busy} />
+      </WorkspacePanel>
+      <WorkspacePanel styles={styles} active={tab === 'suggestions'}>
+        <SuggestionsScreen styles={styles} colors={colors} session={session} demo={demo} active={tab === 'suggestions'}
+          onOpenResumes={() => setTab('resumes')} />
+      </WorkspacePanel>
     </>
   );
 }
@@ -309,34 +322,29 @@ function Nextstep() {
     }
   }
 
+  const inWorkspace = Boolean(session || demo);
+  const toggleTheme = () => setTheme(dark ? 'light' : 'dark');
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style={dark ? 'light' : 'dark'} />
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.safe}>
+      <StatusBar style={dark || inWorkspace ? 'light' : 'dark'} />
       {restoring ? (
         <View style={styles.loading}><ActivityIndicator color={colors.accent} /><Text style={styles.bodyText}>Opening Nextstep…</Text></View>
       ) : (
         <KeyboardAvoidingView style={styles.keyboard} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={[styles.content, navigation.header]}>
-            <View style={styles.header}>
-              <View style={styles.brand}>
-                <View style={styles.mark}><Text style={styles.markText}>n↗</Text></View>
-                <Text style={styles.wordmark}>nextstep</Text>
-              </View>
-              <Pressable accessibilityRole="button" accessibilityLabel={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-                style={styles.themeButton} onPress={() => setTheme(dark ? 'light' : 'dark')}>
-                <Text style={styles.themeIcon}>{dark ? '☀' : '☾'}</Text>
-              </Pressable>
-            </View>
-          </View>
-          {session || demo ? (
+          {inWorkspace ? (
             <Workspace key={session?.user._id || 'demo'} styles={styles} colors={colors}
-              session={session} demo={demo} created={created}
+              session={session} demo={demo} created={created} dark={dark} onToggleTheme={toggleTheme}
               notice={notice} busy={busy} onRefresh={refresh} onSignOut={signOut} />
           ) : (
-            <ScrollView key={mode} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-              <AuthScreen mode={mode} changeMode={value => { setMode(value); setNotice(''); }} colors={colors} styles={styles}
-                onSession={startSession} onPreview={() => setDemo(true)} initialError={notice} />
-            </ScrollView>
+            <>
+              <SafeAreaView edges={['top']}>
+                <AppHeader styles={styles} dark={dark} onToggleTheme={toggleTheme} />
+              </SafeAreaView>
+              <ScrollView key={mode} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+                <AuthScreen mode={mode} changeMode={value => { setMode(value); setNotice(''); }} colors={colors} styles={styles}
+                  onSession={startSession} onPreview={() => setDemo(true)} initialError={notice} />
+              </ScrollView>
+            </>
           )}
         </KeyboardAvoidingView>
       )}
